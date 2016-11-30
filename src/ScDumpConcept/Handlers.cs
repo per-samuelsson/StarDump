@@ -40,6 +40,27 @@ namespace ScDumpConcept
             });
 
             /// <summary>
+            /// Creates data <see cref="HandlerHelper.CreateData"/>
+            /// </summary>
+            Handle.GET("/createdata/simple", () =>
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+                Db.Transact(() =>
+                {
+                    Address address1 = new Address
+                    {
+                        Street = "SimpleFirstStreet",
+                        ZIP = 10101,
+                        City = "SimpleFirstCity",
+                        Country = "SimpleFirstCountry"
+                    };
+                });
+                    sw.Stop();
+                return string.Format("Data created \r\nExecusion time: {0}ms", sw.ElapsedMilliseconds);
+            });
+
+            /// <summary>
             /// Creates one entry of each class <see cref="HandlerHelper.CreateBigData(int)"/>
             /// </summary>
             Handle.GET("/createdata/1", () =>
