@@ -76,15 +76,29 @@ namespace StarDump
 
                     string query = "SELECT * FROM \"" + t.FullName + "\"";
                     var rows = Db.SQL<ResultRow>(query);
+                    List<ResultRow> temp = new List<ResultRow>();
 
                     foreach (var r in rows)
                     {
+                        rowsCount++;
                         r.Fill(t.FullName, columns);
 
-                        sql = helper.GenerateInsertInto(t.FullName, columns, r);
-                        this.ExecuteNonQuery(sql, cn);
+                        if (temp.Count < config.InsertRowsBufferSize)
+                        {
+                            temp.Add(r);
+                            continue;
+                        }
 
-                        rowsCount++;
+                        sql = helper.GenerateInsertInto(t.FullName, columns, temp.ToArray());
+                        this.ExecuteNonQuery(sql, cn);
+                        temp.Clear();
+                    }
+
+                    if (temp.Any())
+                    {
+                        sql = helper.GenerateInsertInto(t.FullName, columns, temp.ToArray());
+                        this.ExecuteNonQuery(sql, cn);
+                        temp.Clear();
                     }
 
                     this.UnloadTableFinish?.Invoke(this, t);

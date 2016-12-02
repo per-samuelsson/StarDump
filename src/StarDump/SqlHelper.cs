@@ -89,38 +89,32 @@ namespace StarDump
         {
             StringBuilder sql = new StringBuilder();
 
-            sql.Append("INSERT INTO `").Append(tableName).Append("` (`ObjectNo`");
+            this.GenerateInsertInto(tableName, columns, sql);
+            this.GenerateInsertInto(columns, row, sql);
+            sql.Append(";");
 
-            foreach (var c in columns)
+            return sql.ToString();
+        }
+
+        public string GenerateInsertInto(string tableName, Starcounter.Metadata.Column[] columns, ResultRow[] rows)
+        {
+            StringBuilder sql = new StringBuilder();
+
+            this.GenerateInsertInto(tableName, columns, sql);
+
+            for (int i = 0; i < rows.Length; i++)
             {
-                sql.Append(", `").Append(c.Name).Append("`");
+                ResultRow row = rows[i];
+
+                if (i > 0)
+                {
+                    sql.Append(", ");
+                }
+
+                this.GenerateInsertInto(columns, row, sql);
             }
 
-            sql.Append(") VALUES (").Append((long)row.DbGetIdentity());
-
-            foreach (var c in columns)
-            {
-                string type = this.GetSqlType(c.DataType.Name);
-                object value = row[c.Name];
-
-                sql.Append(", ");
-
-                if (value == null)
-                {
-                    sql.Append("NULL");
-                }
-                else if (type == "TEXT")
-                {
-                    value = value.ToString().Replace("'", "''");
-                    sql.Append("'").Append(value).Append("'");
-                }
-                else
-                {
-                    sql.Append(value);
-                }
-            }
-
-            sql.Append(");");
+            sql.Append(";");
 
             return sql.ToString();
         }
@@ -157,6 +151,47 @@ namespace StarDump
                 default: 
                     throw new NotImplementedException("Type " + dataTypeName + " is not yet supported.");
             }
+        }
+
+        protected void GenerateInsertInto(Starcounter.Metadata.Column[] columns, ResultRow row, StringBuilder sql)
+        {
+            sql.Append("(").Append((long)row.DbGetIdentity());
+
+            foreach (var c in columns)
+            {
+                string type = this.GetSqlType(c.DataType.Name);
+                object value = row[c.Name];
+
+                sql.Append(", ");
+
+                if (value == null)
+                {
+                    sql.Append("NULL");
+                }
+                else if (type == "TEXT")
+                {
+                    value = value.ToString().Replace("'", "''");
+                    sql.Append("'").Append(value).Append("'");
+                }
+                else
+                {
+                    sql.Append(value);
+                }
+            }
+        
+            sql.Append(") ");
+        }
+
+        protected void GenerateInsertInto(string tableName, Starcounter.Metadata.Column[] columns, StringBuilder sql)
+        {
+            sql.Append("INSERT INTO `").Append(tableName).Append("` (`ObjectNo`");
+
+            foreach (var c in columns)
+            {
+                sql.Append(", `").Append(c.Name).Append("`");
+            }
+
+            sql.Append(") VALUES");
         }
     }
 }

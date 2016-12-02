@@ -11,6 +11,7 @@ namespace StarDump
             this.DatabaseName = "default";
             this.SkipColumnPrefixes = new string[] { "__" };
             this.SkipTablePrefixes = new string[] { "Starcounter.", "Concepts." };
+            this.InsertRowsBufferSize = 25;
 
             string name = string.Format("stardump-{0}-{1}.sqlite3", this.DatabaseName, DateTime.Now.ToString("yyyy.MM.dd-HH.mm"));
             string path = Path.GetTempPath();
@@ -30,6 +31,7 @@ namespace StarDump
         public string FileName { get; set; }
         public string[] SkipColumnPrefixes { get; set; }
         public string[] SkipTablePrefixes { get; set; }
+        public int InsertRowsBufferSize { get; set; }
 
         public FileInfo FileInfo
         {
