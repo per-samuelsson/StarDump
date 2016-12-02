@@ -84,6 +84,14 @@ namespace StarDump
                 case "uint?": return DbCrud.GetNullableUInt(dbId, dbRef, getter);
                 case "reference":
                 case "reference?":
+                    var m = DbCrud.GetDb<Starcounter.Internal.Metadata.MotherOfAllLayouts>(dbId, dbRef, getter);
+
+                    if (m == null)
+                    {
+                        return null;
+                    }
+
+                    return (long)m.GetObjectNo();
                 case "ulong?": return (long?)DbCrud.GetNullableULong(dbId, dbRef, getter);
                 case "ushort?": return DbCrud.GetNullableUShort(dbId, dbRef, getter);
                 default: throw new NotImplementedException("The data type [" + dataTypeName + "] is not supported.");
