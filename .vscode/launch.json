@@ -5,7 +5,7 @@
             "name": "Start StarDump (console)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build-sample",
+            "preLaunchTask": "build-star-dump",
             "program": "${workspaceRoot}/src/StarDump/bin/Debug/netcoreapp1.0/StarDump.dll",
             "args": [],
             "cwd": "${workspaceRoot}",

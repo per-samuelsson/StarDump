@@ -21,6 +21,13 @@
             "isBuildCommand": true,
             "showOutput": "silent",
             "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "build-starcounter",
+            "args": [ "dotnet", "build", "../Starcounter.Core/src/Starcounter" ],
+            "isBuildCommand": true,
+            "showOutput": "silent",
+            "problemMatcher": "$msCompile"
         }
     ]
 }
