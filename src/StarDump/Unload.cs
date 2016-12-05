@@ -56,11 +56,14 @@ namespace StarDump
 
             Db.Transact(() =>
             {
+                ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
                 Starcounter.Metadata.RawView[] tables = this.SelectTables();
                 tablesCount = tables.Length;
 
                 foreach (Starcounter.Metadata.RawView t in tables)
                 {
+                    Starcounter.Internal.Metadata.SetSpecifier specifier = DbCrud.GetSetSpecifier(t, dbHandle);
+
                     this.UnloadTableStart?.Invoke(this, t);
 
                     Starcounter.Metadata.Column[] columns = this.SelectTableColumns(t.FullName);
@@ -80,6 +83,15 @@ namespace StarDump
 
                     foreach (var r in rows)
                     {
+                        var m = Db.FromId<Starcounter.Internal.Metadata.MotherOfAllLayouts>(r.DbGetIdentity());
+                        var proxy = m as Starcounter.Abstractions.Database.IDbProxy;
+                        string s = Db.GetSetSpecifier(proxy, dbHandle);
+
+                        if (specifier.TypeId != s)
+                        {
+                            continue;
+                        }
+
                         rowsCount++;
                         r.Fill(t.FullName, columns);
 
