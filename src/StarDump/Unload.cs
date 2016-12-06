@@ -50,7 +50,7 @@ namespace StarDump
             string sql = helper.GenerateCreateMetadataTables();
             this.ExecuteNonQuery(sql, cn);
 
-            string[] args = new string[0];
+            string[] args = new string[] { config.DatabaseName };
             var host = new AppHostBuilder().AddCommandLine(args).Build();
             host.Start();
 
