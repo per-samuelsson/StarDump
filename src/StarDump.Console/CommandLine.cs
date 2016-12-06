@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using StarDump;
+using System.IO;
 
 namespace StarDump.Console
 {
@@ -16,7 +17,9 @@ namespace StarDump.Console
 
         private List<Command> Commands { get; set; } = new List<Command>();
         private Command CurrentCommand { get; set; }
-        public StarDump.Configuration Configuration { get; set; } = new StarDump.Configuration();
+        private Dictionary<Option, string> OptionsUsed { get; set; } = new Dictionary<Option, string>();
+
+        public StarDump.Configuration Configuration { get; set; }
 
         public CommandLine()
         {
@@ -31,14 +34,44 @@ namespace StarDump.Console
                     new Option
                     {
                         Name = "--database",
-                        Description = "Name of starcounter database",
-                        SetParameterValue = (value) =>  Configuration.DatabaseName = value
+                        Description = "Name of starcounter database to dump",
+                        SetParameterValue = (value) => Configuration.DatabaseName = value,
+                        Required = false
                     },
                     new Option
                     {
                         Name = "--dump",
-                        Description = "output filename",
-                        SetParameterValue = (value) =>  Configuration.FileName = value
+                        Description = "Output dump filename",
+                        SetParameterValue = (value) => 
+                        {
+                            if (value.EndsWith(".sqlite3") == false)
+                            {
+                                value += ".sqlite3";
+                            }
+
+                            string path = Path.GetTempPath(); // TODO temporary path?
+                            Configuration.FileName = Path.IsPathRooted(value) ? value : Path.Combine(path, value);
+                        },
+                        Required = false
+                    },
+                    new Option
+                    {
+                        Name = "--buffersize",
+                        Description = "Set insert rows buffer size to dump database.",
+                        SetParameterValue = (value) =>
+                        {
+                            int v;
+
+                            if (Int32.TryParse(value, out v) == true)
+                            {
+                                Configuration.InsertRowsBufferSize = v;
+                            }
+                            else
+                            {
+                                Out.WriteWarningLine(string.Format("Could not parse \"{0}\" to int, using default value for <--buffersize>, {1}", value, Configuration.InsertRowsBufferSize));
+                            }
+                        },
+                        Required = false
                     }
                 },
                 Run = (x) => StarDump.Program.Unload(x)
@@ -64,7 +97,7 @@ namespace StarDump.Console
                         SetParameterValue = (value) => Configuration.FileName = value
                     }
                 },
-                Run = (x) => System.Console.WriteLine("Entry point for reload")
+                Run = (x) => Out.WriteLine("Entry point for reload")
             });
 
             Commands.Add(new Command
@@ -74,6 +107,23 @@ namespace StarDump.Console
                 Usage = "stardump help [<command options>]",
                 Run = (x) => { PrintHelp(); }
             });
+
+            ConfigurationInit();
+        }
+
+        private void ConfigurationInit()
+        {
+            Configuration = new StarDump.Configuration();
+            Configuration.Verbose = 1;
+            Configuration.DatabaseName = "default";
+            Configuration.SkipColumnPrefixes = new string[] { "__" };
+            Configuration.SkipTablePrefixes = new string[] { "Starcounter.", "Concepts." };
+            Configuration.InsertRowsBufferSize = 25;
+
+            string name = string.Format("stardump-{0}-{1}.sqlite3", Configuration.DatabaseName, DateTime.Now.ToString("yyyy.MM.dd-HH.mm"));
+            string path = Path.GetTempPath();
+
+            Configuration.FileName = Path.Combine(path, name);
         }
 
         public bool Parse(string[] args)
@@ -109,8 +159,8 @@ namespace StarDump.Console
                     }
                     else
                     {
-                        System.Console.WriteLine("<{0}> may not contain more than 1 equal sign (=)", (string)enumerator.Current);
-                        System.Console.WriteLine();
+                        Out.WriteErrorLine(string.Format("<{0}> may not contain more than 1 equal sign (=)", (string)enumerator.Current));
+                        Out.WriteErrorLine();
                         PrintCommand(CurrentCommand);
                         return false;
                     }
@@ -119,16 +169,14 @@ namespace StarDump.Console
 
                     if (option == null)
                     {
-                        System.Console.WriteLine("<{0}> is not a command option for command <{1}>", optionArg, CurrentCommand.Name);
-                        System.Console.WriteLine();
+                        Out.WriteErrorLine(string.Format("<{0}> is not a command option for command <{1}>", optionArg, CurrentCommand.Name));
+                        Out.WriteErrorLine();
                         PrintCommand(CurrentCommand);
                         return false;
                     }
-
-                    // Set Parameter value
-                    if (optionParamterArg != null)
+                    else
                     {
-                        option.SetParameterValue(optionParamterArg);
+                        OptionsUsed.Add(option, optionParamterArg);
                     }
                 }
 
@@ -136,14 +184,55 @@ namespace StarDump.Console
             }
 
             // Should never end up here
-            System.Console.WriteLine("<{0}> is not a valid command", (string)enumerator.Current);
+            Out.WriteErrorLine(string.Format("<{0}> is not a valid command", (string)enumerator.Current));
+            Out.WriteErrorLine();
             PrintHelp();
             return false;
         }
 
         public bool ValidateArguments()
         {
-            // TODO check if file path exist
+            // Validate if all Required command options has been set
+            foreach (Option option in CurrentCommand.CommandOptions.Where(o => o.Required == true))
+            {
+                if (OptionsUsed.ContainsKey(option) == false)
+                {
+                    Out.WriteErrorLine(string.Format("Command option <{0}> is required but was not set", option.Name));
+                    Out.WriteErrorLine("");
+                    PrintCommand(CurrentCommand);
+                    return false;
+                }
+            }
+
+            // Validate all command options which needs a parameter
+            foreach (var x in OptionsUsed)
+            {
+                if (x.Key.SetParameterValue != null && String.IsNullOrEmpty(x.Value))
+                {
+                    Out.WriteErrorLine(string.Format("Command option <{0}> needs a parameter value", x.Key.Name));
+                    Out.WriteErrorLine("");
+                    PrintCommand(CurrentCommand);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool SetOptions()
+        {
+            foreach (var x in OptionsUsed)
+            {
+                if (x.Value != null)
+                {
+                    x.Key.SetParameterValue(x.Value);
+                }
+                else
+                {
+                    // Use default value
+                }
+            }
+
             return true;
         }
 
@@ -163,25 +252,42 @@ namespace StarDump.Console
 
         private void PrintHelp()
         {
-            System.Console.WriteLine("Usage: stardump <command> [<command options>]");
-            System.Console.WriteLine();
-            System.Console.WriteLine("Commands:");
+            Out.WriteLine("Usage: stardump <command> [<command options>]");
+            Out.WriteLine();
+            Out.WriteLine("Commands:");
             foreach(Command c in Commands)
             {
-                System.Console.WriteLine(c.ToString());
+                Out.WriteLine(c.ToString());
             }
         }
 
         private void PrintCommand(Command command)
         {
-            System.Console.WriteLine("Command:      <{0}>", command.Name);
-            System.Console.WriteLine("Description:  {0}", command.Description);
-            System.Console.WriteLine("Usage:        {0}", command.Usage);
-            System.Console.WriteLine();
-            System.Console.WriteLine("Options:");
-            foreach (Option o in command.CommandOptions)
+            Out.WriteLine(string.Format("Command:      <{0}>", command.Name));
+            Out.WriteLine(string.Format("Description:  {0}", command.Description));
+            Out.WriteLine(string.Format("Usage:        {0}", command.Usage));
+            Out.WriteLine();
+
+            List<Option> options = command.CommandOptions.Where(x => x.Required == true).ToList();
+            if (options.Count() > 0)
             {
-                System.Console.WriteLine(o.ToString());
+                Out.WriteLine("Options (Required):");
+                foreach (Option o in options)
+                {
+                    Out.WriteLine(o.ToString());
+                }
+            }
+
+            Out.WriteLine();
+
+            options = command.CommandOptions.Where(x => x.Required == false).ToList();
+            if (options.Count() > 0)
+            {
+                Out.WriteLine("Options (Optional):");
+                foreach (Option o in options)
+                {
+                    Out.WriteLine(o.ToString());
+                }
             }
         }
 
@@ -198,6 +304,7 @@ namespace StarDump.Console
         public class Option : BaseCommand
         {
             public Action<string> SetParameterValue;
+            public bool Required { get; set; } = false;
             public override string ToString()
             {
                 string name = SetParameterValue == null ? Name : Name + "=<parameter>";

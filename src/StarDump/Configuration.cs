@@ -19,13 +19,6 @@ namespace StarDump
             this.FileName = Path.Combine(path, name);
         }
 
-        public Configuration(int verbose, string databaseName, string fileName) : this()
-        {
-            this.Verbose = verbose;
-            this.DatabaseName = databaseName;
-            this.FileName = fileName;
-        }
-
         public int Verbose { get; set; }
         public string DatabaseName { get; set; }
         public string FileName { get; set; }

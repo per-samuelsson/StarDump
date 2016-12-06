@@ -13,27 +13,33 @@ namespace StarDump.Console
     {
         public static void Main(string[] args)
         {
-            // command for running as before:
-            //    dotnet run unload
-            // or set Application Arguments @ StarDump->Properties->Debug to unload
-
             CommandLine commandLine = new CommandLine();
 
             if (commandLine.Parse(args) == false)
             {
-                System.Console.WriteLine();
-                System.Console.WriteLine("Argument parsing failed.");
+                Out.WriteErrorLine();
+                Out.WriteErrorLine("Argument parsing failed.");
                 return;
             }
 
             if (commandLine.ValidateArguments() == false)
             {
+                Out.WriteErrorLine();
+                Out.WriteErrorLine("Argument validation failed.");
+                return;
+            }
+
+            if (commandLine.SetOptions() == false)
+            {
+                Out.WriteErrorLine();
+                Out.WriteErrorLine("Setting command line options failed.");
+                return;
             }
 
             if (commandLine.Run() == false)
             {
-                System.Console.WriteLine();
-                System.Console.WriteLine("Execution failed.");
+                Out.WriteErrorLine();
+                Out.WriteErrorLine("Execution failed.");
                 return;
             }
         }
