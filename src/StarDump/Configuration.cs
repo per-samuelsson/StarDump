@@ -10,7 +10,7 @@ namespace StarDump
             this.Verbose = 1;
             this.DatabaseName = "default";
             this.SkipColumnPrefixes = new string[] { "__" };
-            this.SkipTablePrefixes = new string[] { "Starcounter.", "Concepts." };
+            this.SkipTablePrefixes = new string[] { "Starcounter.", "Concepts.", "SocietyObjects." };
             this.InsertRowsBufferSize = 25;
 
             string name = string.Format("stardump-{0}-{1}.sqlite3", this.DatabaseName, DateTime.Now.ToString("yyyy.MM.dd-HH.mm"));
