@@ -58,6 +58,7 @@ namespace StarDump
             public string Name { get; set; }
             public long ParentId { get; set; }
             public string ParentName { get; set; }
+            public bool Created { get; set; }
         }
 
         protected class ReloadColumn
@@ -107,27 +108,44 @@ namespace StarDump
                 {
                     Id = id,
                     Name = name,
-                    ParentId = parentId
+                    ParentId = parentId,
+                    Created = false
                 };
 
                 tables.Add(t);
             }
 
             reader.Dispose();
-            tables = tables.OrderBy(x => x.Id).ToList();
+            tables = tables.OrderBy(x => (ulong)x.Id).ToList();
 
             foreach (ReloadTable t in tables)
             {
-                ReloadTable parent = tables.FirstOrDefault(x => x.Id == t.ParentId);
-
-                if (parent != null)
-                {
-                    t.ParentName = parent.Name;
-                }
-
-                List<ReloadColumn> columns = this.SelectColumns(cn, t.Id);
-                this.CreateTable(t, columns);
+                this.CreateTable(cn, tables, t);
             }
+        }
+
+        protected void CreateTable(SqliteConnection cn, List<ReloadTable> tables, ReloadTable table)
+        {
+            if (table.Created)
+            {
+                return;
+            }
+
+            ReloadTable parent = tables.FirstOrDefault(x => x.Id == table.ParentId);
+
+            if (parent != null)
+            {
+                this.CreateTable(cn, tables, parent);
+                table.ParentName = parent.Name;
+            }
+
+            this.CreateTable(cn, table);
+        }
+
+        protected void CreateTable(SqliteConnection cn, ReloadTable table)
+        {
+            List<ReloadColumn> columns = this.SelectColumns(cn, table.Id);
+            this.CreateTable(table, columns);
         }
 
         protected void CreateTable(ReloadTable table, List<ReloadColumn> columns)
@@ -136,9 +154,15 @@ namespace StarDump
 
             ushort layout;
             ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
+            string parentName = table.ParentName;
+
+            if (string.IsNullOrEmpty(parentName))
+            {
+                parentName = "Starcounter.Internal.Metadata.MotherOfAllLayouts";
+            }
 
             // MetalayerCheck(...)
-            uint code = scdbmetalayer.star_create_table_by_names(dbHandle, table.Name, table.ParentName, bluestarColumns, out layout);
+            uint code = scdbmetalayer.star_create_table_by_names(dbHandle, table.Name, parentName, bluestarColumns, out layout);
 
             if (code != 0)
             {
@@ -146,6 +170,8 @@ namespace StarDump
                 // throw new Exception(message);
                 throw new Starcounter.StarcounterException(code);
             }
+
+            table.Created = true;
         }
 
         protected List<ReloadColumn> SelectColumns(SqliteConnection cn, long tableId)
@@ -198,7 +224,8 @@ namespace StarDump
 
             if (c.primitive_type == sccoredb.STAR_TYPE_REFERENCE)
             {
-                c.type_name = referenceType;
+                //c.type_name = referenceType;
+                c.type_name = null;
             }
 
             return c;
