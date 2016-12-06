@@ -11,7 +11,7 @@ namespace StarDump
             StringBuilder sql = new StringBuilder();
 
             sql.Append("CREATE TABLE `Starcounter.Metadata.Table` (`Id` INTEGER NOT NULL, `Name` TEXT NOT NULL, `ParentId` INTEGER, PRIMARY KEY(`Id`));");
-            sql.Append("CREATE TABLE `Starcounter.Metadata.Column` (`Id` INTEGER NOT NULL, `TableId` INTEGER NOT NULL, `Name` TEXT NOT NULL, `Type` TEXT NOT NULL, `Nullable` INTEGER NOT NULL, PRIMARY KEY(`Id`));");
+            sql.Append("CREATE TABLE `Starcounter.Metadata.Column` (`Id` INTEGER NOT NULL, `TableId` INTEGER NOT NULL, `Name` TEXT NOT NULL, `DataType` TEXT NOT NULL, `ReferenceType` TEXT NULL, `Nullable` INTEGER NOT NULL, `Inherited` INTEGER NOT NULL, PRIMARY KEY(`Id`));");
 
             return sql.ToString();
         }
@@ -41,7 +41,7 @@ namespace StarDump
         {
             StringBuilder sql = new StringBuilder();
 
-            sql.Append("INSERT INTO `Starcounter.Metadata.Column` (`Id`, `TableId`, `Name`, `Type`, `Nullable`) VALUES ");
+            sql.Append("INSERT INTO `Starcounter.Metadata.Column` (`Id`, `TableId`, `Name`, `DataType`, `ReferenceType`, `Nullable`, `Inherited`) VALUES ");
 
             for (int i = 0; i < columns.Length; i++)
             {
@@ -54,7 +54,19 @@ namespace StarDump
 
                 sql.Append("(").Append((long)col.GetObjectNo()).Append(", ")
                     .Append((long)table.GetObjectNo()).Append(", '").Append(col.Name).Append("', '")
-                    .Append(col.DataType.Name).Append("', ").Append(col.Nullable ? 1 : 0).Append(")");
+                    .Append(col.DataType.Name).Append("', ");
+
+                if (col.DataType.Name == "reference")
+                {
+                    // TODO: insert reference type name
+                    sql.Append("NULL");
+                }
+                else
+                {
+                    sql.Append("NULL");
+                }
+
+                sql.Append(", ").Append(col.Nullable ? 1 : 0).Append(", ").Append(col.Inherited ? 1 : 0).Append(")");
             }
 
             sql.Append(";");
