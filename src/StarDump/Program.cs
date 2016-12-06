@@ -15,8 +15,19 @@ namespace StarDump
         {
             Configuration config = new Configuration();
             config.FileName = Path.Combine(@"D:\Temp\Core\Database", config.FileInfo.Name);
+            // config.FileName = @"D:\Temp\Core\Database\stardump-default-2016.12.06-00.55.sqlite3";
+            // config.DatabaseName = "reload";
 
             Unload(config);
+            //Reload(config);
+        }
+
+        public static void Reload(Configuration config)
+        {
+            Reload reload = new Reload(config);
+
+            reload.Run();
+            Console.WriteLine("Done");
         }
 
         public static void Unload(Configuration config)
