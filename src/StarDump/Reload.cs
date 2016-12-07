@@ -41,18 +41,14 @@ namespace StarDump
             
             host.Start();
             cn.Open();
-
-            Db.Transact(() =>
-            {
-                this.CreateTables(cn);
-            });
-
+            
+            this.CreateTablesAndInsertData(cn);
             cn.Close();
 
             return null;
         }
 
-        protected class ReloadTable
+        public class ReloadTable
         {
             public long Id { get; set; }
             public string Name { get; set; }
@@ -61,7 +57,7 @@ namespace StarDump
             public bool Created { get; set; }
         }
 
-        protected class ReloadColumn
+        public class ReloadColumn
         {
             public long Id { get; set; }
             public long TableId { get; set; }
@@ -93,7 +89,7 @@ namespace StarDump
             { "object", sccoredb.STAR_TYPE_REFERENCE }
         };
 
-        protected void CreateTables(SqliteConnection cn)
+        protected void CreateTablesAndInsertData(SqliteConnection cn)
         {
             List<ReloadTable> tables = new List<ReloadTable>();
             SqliteCommand cmd = new SqliteCommand("SELECT `Id`, `Name`, `ParentId` FROM `Starcounter.Metadata.Table`", cn);
@@ -120,11 +116,11 @@ namespace StarDump
 
             foreach (ReloadTable t in tables)
             {
-                this.CreateTable(cn, tables, t);
+                this.CreateTableAndInsertData(cn, tables, t);
             }
         }
 
-        protected void CreateTable(SqliteConnection cn, List<ReloadTable> tables, ReloadTable table)
+        protected void CreateTableAndInsertData(SqliteConnection cn, List<ReloadTable> tables, ReloadTable table)
         {
             if (table.Created)
             {
@@ -135,43 +131,68 @@ namespace StarDump
 
             if (parent != null)
             {
-                this.CreateTable(cn, tables, parent);
+                this.CreateTableAndInsertData(cn, tables, parent);
                 table.ParentName = parent.Name;
             }
 
-            this.CreateTable(cn, table);
+            this.CreateTableAndInsertData(cn, table);
         }
 
-        protected void CreateTable(SqliteConnection cn, ReloadTable table)
+        protected void CreateTableAndInsertData(SqliteConnection cn, ReloadTable table)
         {
             List<ReloadColumn> columns = this.SelectColumns(cn, table.Id);
-            this.CreateTable(table, columns);
+
+            
+
+            Db.Transact(() => 
+            {
+                this.CreateTable(table, columns);
+            });
+
+            Db.Transact(() => 
+            {
+                this.InsertTableData(cn, table, columns);
+            });
         }
 
         protected void CreateTable(ReloadTable table, List<ReloadColumn> columns)
         {
-            BluestarColumn[] bluestarColumns = columns.Where(x => !x.Inherited).Select(x => this.GetBluestarColumn(x)).ToArray();
+            List<BluestarColumn> bluestarColumns = columns.Where(x => !x.Inherited).Select(x => this.GetBluestarColumn(x)).ToList();
 
             ushort layout;
-            ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
             string parentName = table.ParentName;
+            ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
 
-            if (string.IsNullOrEmpty(parentName))
-            {
-                parentName = "Starcounter.Internal.Metadata.MotherOfAllLayouts";
-            }
-
-            // MetalayerCheck(...)
-            uint code = scdbmetalayer.star_create_table_by_names(dbHandle, table.Name, parentName, bluestarColumns, out layout);
-
-            if (code != 0)
-            {
-                // string message = string.Format("Unable to create a table. scdbmetalayer.star_create_table_by_names({0, {1}, {2}, {3}})", dbHandle, table.Name, table.ParentName, bluestarColumns);
-                // throw new Exception(message);
-                throw new Starcounter.StarcounterException(code);
-            }
+            bluestarColumns.Add(new BluestarColumn() { name = null });
+            Starcounter.Db.MetalayerCheck(scdbmetalayer.star_create_table_by_names(dbHandle, table.Name, parentName, bluestarColumns.ToArray(), out layout));
 
             table.Created = true;
+        }
+
+        protected void InsertTableData(SqliteConnection cn, ReloadTable table, List<ReloadColumn> columns)
+        {
+            SqlHelper helper = new SqlHelper();
+            string sql = helper.GenerateSelectFrom(table.Name, columns.Select(x => x.Name).ToArray());
+            SqliteCommand cmd = new SqliteCommand(sql, cn);
+            SqliteDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                long id = reader.GetInt64(0);
+                ResultRow row = new ResultRow((ulong)id, 0);
+
+                for (int i = 0; i < columns.Count; i++)
+                {
+                    ReloadColumn c = columns[i];
+                    object value = reader.GetValue(i + 1);
+
+                    row[c.Name] = helper.ConvertFromSqliteToStarcounter(c.DataType, value);
+                }
+
+                row.Insert(table.Name, columns.ToArray());
+            }
+
+            reader.Dispose();
         }
 
         protected List<ReloadColumn> SelectColumns(SqliteConnection cn, long tableId)

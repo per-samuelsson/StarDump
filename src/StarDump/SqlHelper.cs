@@ -131,6 +131,22 @@ namespace StarDump
             return sql.ToString();
         }
 
+        public string GenerateSelectFrom(string tableName, string[] columnNames)
+        {
+            StringBuilder sql = new StringBuilder();
+
+            sql.Append("SELECT ObjectNo");
+
+            foreach (string c in columnNames)
+            {
+                sql.Append(", `").Append(c).Append("`");
+            }
+
+            sql.Append(" FROM `").Append(tableName).Append("`");
+
+            return sql.ToString();
+        }
+
         public string GetSqlType(string dataTypeName)
         {
             switch (dataTypeName)
@@ -162,6 +178,101 @@ namespace StarDump
 
                 default: 
                     throw new NotImplementedException("Type " + dataTypeName + " is not yet supported.");
+            }
+        }
+
+        public object ConvertFromStarcounterToSqlite(string starcounterDataTypeName, object value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            switch (starcounterDataTypeName)
+            {
+                case "bool": return (bool)value ? 1 : 0;
+                case "byte": return (long)((byte)value);
+                case "char": return (long)((char)value);
+                case "DateTime": return ((DateTime)value).Ticks;
+                case "decimal": return ((decimal)value).ToString();
+                case "double": return (double)value;
+                case "float": return (double)((float)value);
+                case "int": return (long)((int)value);
+                case "long": return (long)value;
+                case "sbyte": return (long)((sbyte)value);
+                case "short": return (long)((short)value);
+                case "string?":
+                case "string": return value as string;
+                case "uint": return (long)((uint)value);
+                case "ulong": return (long)((ulong)value);
+                case "ushort": return (long)((ushort)value);
+                
+                case "bool?": return ((bool?)value).Value ? 1 : 0;
+                case "byte?": return (long)(value as byte?).Value;
+                case "char?": return (long)(value as char?).Value;
+                case "DateTime?": return (value as DateTime?).Value.Ticks;
+                case "decimal?": return decimal.Parse((string)value) as decimal?;
+                case "double?": return (value as double?).Value;
+                case "float?": return (double)(value as float?).Value;
+                case "int?": return (long)(value as int?).Value;
+                case "long?": return (value as long?).Value;
+                case "sbyte?": return (long)(value as sbyte?).Value;
+                case "short?": return (long)(value as short?).Value;
+                case "uint?": return (long)(value as uint?).Value;
+                case "reference":
+                case "reference?":
+                case "ulong?": return (long)(value as ulong?).Value;
+                case "ushort?": return (long)(value as ushort?).Value;
+
+                case "byte[]":
+                default: throw new NotImplementedException("The data type [" + starcounterDataTypeName + "] is not supported.");
+            }
+        }
+
+        public object ConvertFromSqliteToStarcounter(string starcounterDataTypeName, object value)
+        {
+            if (value == null || System.DBNull.Value.Equals(value))
+            {
+                return null;
+            }
+
+            switch (starcounterDataTypeName)
+            {
+                case "bool": return (long)value == 1;
+                case "byte": return (byte)((long)value);
+                case "char": return (char)((long)value);
+                case "DateTime": return new DateTime((long)value);
+                case "decimal": return decimal.Parse((string)value);
+                case "double": return (double)value;
+                case "float": return (float)((double)value);
+                case "int": return (int)((long)value);
+                case "long": return (long)value;
+                case "sbyte": return (sbyte)((long)value);
+                case "short": return (short)((long)value);
+                case "string?":
+                case "string": return value as string;
+                case "uint": return (uint)((long)value);
+                case "ulong": return (ulong)((long)value);
+                case "ushort": return (ushort)((long)value);
+                case "bool?": return ((long)value == 1) as bool?;
+                case "byte?": return (byte)((long)value) as byte?;
+                case "char?": return (char)((long)value) as char?;
+                case "DateTime?": return new DateTime((long)value) as DateTime?;
+                case "decimal?": return decimal.Parse((string)value) as decimal?;
+                case "double?": return (double)value as double?;
+                case "float?": return (float)((double)value) as float?;
+                case "int?": return (int)((long)value) as int?;
+                case "long?": return (long)value as long?;
+                case "sbyte?": return (sbyte)((long)value) as sbyte?;
+                case "short?": return (short)((long)value) as short?;
+                case "uint?": return (uint)((long)value) as uint?;
+                case "reference":
+                case "reference?":
+                case "ulong?": return (ulong)((long)value) as ulong?;
+                case "ushort?": return (ushort)((long)value) as ushort?;
+
+                case "byte[]":
+                default: throw new NotImplementedException("The data type [" + starcounterDataTypeName + "] is not supported.");
             }
         }
 
