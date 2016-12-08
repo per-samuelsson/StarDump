@@ -13,37 +13,26 @@ namespace StarDump
     public class Unload
     {
         public Configuration Configuration { get; protected set; }
+        public SqlHelper SqlHelper { get; protected set; }
         public event EventHandler<Starcounter.Metadata.RawView> UnloadTableStart;
         public event EventHandler<Starcounter.Metadata.RawView> UnloadTableFinish;
 
         public Unload(Configuration config)
         {
             this.Configuration = config;
+            this.SqlHelper = new SqlHelper();
         }
 
         public RunResult Run()
         {
             Stopwatch watch = new Stopwatch();
             Configuration config = this.Configuration;
-            FileInfo fi = config.FileInfo;
             int tablesCount = 0;
             ulong rowsCount = 0;
 
             watch.Start();
 
-            if (!fi.Directory.Exists)
-            {
-                fi.Directory.Create();
-            }
-            else if (fi.Exists)
-            {
-                fi.Delete();
-            }
-
-            SqlHelper helper = new SqlHelper();
-            string connectionString = string.Format("Data Source={0}", fi.FullName);
-            SqliteConnection cn = new SqliteConnection(connectionString);
-
+            SqliteConnection cn = this.GetConnection();
             string[] args = new string[] { config.DatabaseName };
             var host = new AppHostBuilder().AddCommandLine(args).Build();
             
@@ -51,7 +40,7 @@ namespace StarDump
             UnloadRow.RegisterDatabaseType();
             cn.Open();
 
-            string sql = helper.GenerateCreateMetadataTables();
+            string sql = this.SqlHelper.GenerateCreateMetadataTables();
             this.ExecuteNonQuery(sql, cn);
 
             Db.Transact(() =>
@@ -62,67 +51,109 @@ namespace StarDump
 
                 foreach (Starcounter.Metadata.RawView t in tables)
                 {
-                    Starcounter.Internal.Metadata.SetSpecifier specifier = DbCrud.GetSetSpecifier(t, dbHandle);
-
                     this.UnloadTableStart?.Invoke(this, t);
 
+                    Starcounter.Internal.Metadata.SetSpecifier specifier = DbCrud.GetSetSpecifier(t, dbHandle);
                     Starcounter.Metadata.Column[] columns = this.SelectTableColumns(t.FullName);
-
-                    sql = helper.GenerateInsertMetadataTable(t);
-                    this.ExecuteNonQuery(sql, cn);
-
-                    sql = helper.GenerateInsertMetadataColumns(t, columns);
-                    this.ExecuteNonQuery(sql, cn);
-
-                    sql = helper.GenerateCreateTable(t, columns);
-                    this.ExecuteNonQuery(sql, cn);
 
                     string query = "SELECT * FROM \"" + t.FullName + "\"";
                     var rows = Db.SQL<UnloadRow>(query);
                     List<UnloadRow> temp = new List<UnloadRow>();
+                    ulong tableRowsCount = 0;
+
+                    this.CreateTableAndInsertMetadata(cn, t, columns);
 
                     foreach (var r in rows)
                     {
-                        var m = Db.FromId<Starcounter.Internal.Metadata.MotherOfAllLayouts>(r.DbGetIdentity());
-                        var proxy = m as Starcounter.Abstractions.Database.IDbProxy;
-                        string s = Db.GetSetSpecifier(proxy, dbHandle);
+                        bool equals = this.SetSpecifierEquals(dbHandle, specifier, r);
 
-                        if (specifier.TypeId != s)
+                        if (!equals)
                         {
                             continue;
                         }
 
-                        rowsCount++;
+                        tableRowsCount++;
                         r.Fill(t.FullName, columns);
+                        temp.Add(r);
 
                         if (temp.Count < config.InsertRowsBufferSize)
                         {
-                            temp.Add(r);
                             continue;
                         }
 
-                        sql = helper.GenerateInsertInto(t.FullName, columns, temp.ToArray());
-                        this.ExecuteNonQuery(sql, cn);
+                        this.InsertRows(cn, t.FullName, columns, temp);
                         temp.Clear();
                     }
 
                     if (temp.Any())
                     {
-                        sql = helper.GenerateInsertInto(t.FullName, columns, temp.ToArray());
-                        this.ExecuteNonQuery(sql, cn);
-                        temp.Clear();
+                        this.InsertRows(cn, t.FullName, columns, temp);
                     }
 
+                    sql = this.SqlHelper.GenerateUpdateMetadataTableRowsCount(t.FullName, tableRowsCount);
+                    this.ExecuteNonQuery(sql, cn);
+
+                    rowsCount += tableRowsCount;
                     this.UnloadTableFinish?.Invoke(this, t);
                 }
             });
 
             cn.Close();
+            host.Dispose();
             watch.Stop();
 
             RunResult result = new RunResult(watch.Elapsed, tablesCount, rowsCount);
 
             return result;
+        }
+
+        protected SqliteConnection GetConnection()
+        {
+            FileInfo fi = this.Configuration.FileInfo;
+
+            if (!fi.Directory.Exists)
+            {
+                fi.Directory.Create();
+            }
+            else if (fi.Exists)
+            {
+                fi.Delete();
+            }
+
+            string connectionString = string.Format("Data Source={0}", fi.FullName);
+            SqliteConnection cn = new SqliteConnection(connectionString);
+
+            return cn;
+        }
+
+        protected void CreateTableAndInsertMetadata(SqliteConnection cn, Starcounter.Metadata.RawView table, Starcounter.Metadata.Column[] columns)
+        {
+            string sql = this.SqlHelper.GenerateInsertMetadataTable(table);
+            this.ExecuteNonQuery(sql, cn);
+
+            sql = this.SqlHelper.GenerateInsertMetadataColumns(table, columns);
+            this.ExecuteNonQuery(sql, cn);
+
+            sql = this.SqlHelper.GenerateCreateTable(table, columns);
+            this.ExecuteNonQuery(sql, cn);
+        }
+
+        protected void InsertRows(SqliteConnection cn, string tableName, Starcounter.Metadata.Column[] columns, List<UnloadRow> rows)
+        {
+            string sql = this.SqlHelper.GenerateInsertInto(tableName, columns, rows.ToArray());
+            this.ExecuteNonQuery(sql, cn);
+        }
+
+        /// <summary>
+        /// Returns true if row belongs to specifier, false otherwise
+        /// </summary>
+        protected bool SetSpecifierEquals(ulong dbHandle, Starcounter.Internal.Metadata.SetSpecifier specifier, UnloadRow row)
+        {
+            var m = Db.FromId<Starcounter.Internal.Metadata.MotherOfAllLayouts>(row.DbGetIdentity());
+            var proxy = m as Starcounter.Abstractions.Database.IDbProxy;
+            string s = Db.GetSetSpecifier(proxy, dbHandle);
+
+            return specifier.TypeId == s;
         }
 
         protected Starcounter.Metadata.RawView[] SelectTables()

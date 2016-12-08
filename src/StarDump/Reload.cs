@@ -51,6 +51,7 @@ namespace StarDump
             
             this.CreateTablesAndInsertData(cn, out tablesCount, out rowsCount);
             cn.Close();
+            host.Dispose();
             watch.Stop();
 
             RunResult result = new RunResult(watch.Elapsed, tablesCount, rowsCount);

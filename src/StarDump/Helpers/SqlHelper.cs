@@ -10,7 +10,7 @@ namespace StarDump
         {
             StringBuilder sql = new StringBuilder();
 
-            sql.Append("CREATE TABLE `Starcounter.Metadata.Table` (`Id` INTEGER NOT NULL, `Name` TEXT NOT NULL, `ParentId` INTEGER, PRIMARY KEY(`Id`));");
+            sql.Append("CREATE TABLE `Starcounter.Metadata.Table` (`Id` INTEGER NOT NULL, `Name` TEXT NOT NULL, `ParentId` INTEGER, `RowsCount` INTEGER, PRIMARY KEY(`Id`));");
             sql.Append("CREATE TABLE `Starcounter.Metadata.Column` (`Id` INTEGER NOT NULL, `TableId` INTEGER NOT NULL, `Name` TEXT NOT NULL, `DataType` TEXT NOT NULL, `ReferenceType` TEXT NULL, `Nullable` INTEGER NOT NULL, `Inherited` INTEGER NOT NULL, PRIMARY KEY(`Id`));");
 
             return sql.ToString();
@@ -33,6 +33,16 @@ namespace StarDump
             }
 
             sql.Append(");");
+
+            return sql.ToString();
+        }
+
+        public string GenerateUpdateMetadataTableRowsCount(string tableName, ulong rowsCount)
+        {
+            StringBuilder sql = new StringBuilder();
+            long count = (long)rowsCount;
+
+            sql.Append("UPDATE `Starcounter.Metadata.Table` SET `RowsCount` = ").Append(count).Append(" WHERE `Name` = '").Append(tableName).Append("';");
 
             return sql.ToString();
         }
