@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using Microsoft.Data.Sqlite;
 using Starcounter;
 using Starcounter.Database.Interop;
@@ -15,6 +16,8 @@ namespace StarDump
     {
         public Configuration Configuration { get; protected set; }
         public SqlHelper SqlHelper { get; protected set; }
+        public event EventHandler<ReloadTable> ReloadTableStart;
+        public event EventHandler<ReloadTable> ReloadTableFinish;
 
         public Reload(Configuration config)
         {
@@ -24,6 +27,7 @@ namespace StarDump
 
         public RunResult Run()
         {
+            Stopwatch watch = new Stopwatch();
             Configuration config = this.Configuration;
             FileInfo fi = config.FileInfo;
             int tablesCount = 0;
@@ -34,6 +38,8 @@ namespace StarDump
                 throw new FileNotFoundException(fi.FullName);
             }
 
+            watch.Start();
+
             string connectionString = string.Format("Data Source={0}", fi.FullName);
             SqliteConnection cn = new SqliteConnection(connectionString);
 
@@ -43,10 +49,13 @@ namespace StarDump
             host.Start();
             cn.Open();
             
-            this.CreateTablesAndInsertData(cn);
+            this.CreateTablesAndInsertData(cn, out tablesCount, out rowsCount);
             cn.Close();
+            watch.Stop();
 
-            return null;
+            RunResult result = new RunResult(watch.Elapsed, tablesCount, rowsCount);
+
+            return result;
         }
 
         protected Dictionary<string, byte> typeMap = new Dictionary<string, byte>()
@@ -70,11 +79,12 @@ namespace StarDump
             { "object", sccoredb.STAR_TYPE_REFERENCE }
         };
 
-        protected void CreateTablesAndInsertData(SqliteConnection cn)
+        protected void CreateTablesAndInsertData(SqliteConnection cn, out int tablesCount, out ulong rowsCount)
         {
             List<ReloadTable> tables = new List<ReloadTable>();
             SqliteCommand cmd = new SqliteCommand("SELECT `Id`, `Name`, `ParentId` FROM `Starcounter.Metadata.Table`", cn);
-            SqliteDataReader reader = cmd.ExecuteReader(); 
+            SqliteDataReader reader = cmd.ExecuteReader();
+            ulong tempRowsCount = 0;
 
             while (reader.Read())  
             {  
@@ -94,46 +104,53 @@ namespace StarDump
 
             reader.Dispose();
             tables = tables.OrderBy(x => (ulong)x.Id).ToList();
+            tablesCount = tables.Count;
+            rowsCount = 0;
 
             foreach (ReloadTable t in tables)
             {
-                this.CreateTableAndInsertData(cn, tables, t);
+                this.CreateTableAndInsertData(cn, tables, t, out tempRowsCount);
+                rowsCount += tempRowsCount;
             }
         }
 
-        protected void CreateTableAndInsertData(SqliteConnection cn, List<ReloadTable> tables, ReloadTable table)
+        protected void CreateTableAndInsertData(SqliteConnection cn, List<ReloadTable> tables, ReloadTable table, out ulong rowsCount)
         {
+            rowsCount = 0;
+
             if (table.Created)
             {
                 return;
             }
 
             ReloadTable parent = tables.FirstOrDefault(x => x.Id == table.ParentId);
+            ulong parentRowsCount = 0;
+            ulong tableRowsCount;
 
             if (parent != null)
             {
-                this.CreateTableAndInsertData(cn, tables, parent);
+                this.CreateTableAndInsertData(cn, tables, parent, out parentRowsCount);
                 table.ParentName = parent.Name;
             }
 
-            this.CreateTableAndInsertData(cn, table);
+            this.CreateTableAndInsertData(cn, table, out tableRowsCount);
+
+            rowsCount = parentRowsCount + tableRowsCount;
         }
 
-        protected void CreateTableAndInsertData(SqliteConnection cn, ReloadTable table)
+        protected void CreateTableAndInsertData(SqliteConnection cn, ReloadTable table, out ulong rowsCount)
         {
-            List<ReloadColumn> columns = this.SelectColumns(cn, table.Id);
+            this.ReloadTableStart?.Invoke(this, table);
 
-            
+            List<ReloadColumn> columns = this.SelectColumns(cn, table.Id);
 
             Db.Transact(() => 
             {
                 this.CreateTable(table, columns);
             });
-
-            Db.Transact(() => 
-            {
-                this.InsertTableData(cn, table, columns);
-            });
+            
+            this.InsertTableData(cn, table, columns, out rowsCount);
+            this.ReloadTableFinish?.Invoke(this, table);
         }
 
         protected void CreateTable(ReloadTable table, List<ReloadColumn> columns)
@@ -150,11 +167,12 @@ namespace StarDump
             table.Created = true;
         }
 
-        protected void InsertTableData(SqliteConnection cn, ReloadTable table, List<ReloadColumn> columns)
+        protected void InsertTableData(SqliteConnection cn, ReloadTable table, List<ReloadColumn> columns, out ulong rowsCount)
         {
             string sql = this.SqlHelper.GenerateSelectFrom(table.Name, columns.Select(x => x.Name).ToArray());
             SqliteCommand cmd = new SqliteCommand(sql, cn);
             SqliteDataReader reader = cmd.ExecuteReader();
+            rowsCount = 0;
 
             while (reader.Read())
             {
@@ -169,7 +187,12 @@ namespace StarDump
                     row[c.Name] = this.SqlHelper.ConvertFromSqliteToStarcounter(c.DataType, value);
                 }
 
-                row.Insert(table.Name, columns.ToArray());
+                Db.Transact(() =>
+                {
+                    row.Insert(table.Name, columns.ToArray());
+                });
+
+                rowsCount++;
             }
 
             reader.Dispose();

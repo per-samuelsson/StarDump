@@ -29,8 +29,22 @@ namespace StarDump
         {
             Reload reload = new Reload(config);
 
-            reload.Run();
-            Console.WriteLine("Done");
+            reload.ReloadTableStart += (sender, table) =>
+            {
+                Console.WriteLine("{0}: start {1}", DateTime.Now, table.Name);
+            };
+
+            reload.ReloadTableFinish += (sender, table) =>
+            {
+                Console.WriteLine("{0}: finish {1}", DateTime.Now, table.Name);
+            };
+
+            RunResult result = reload.Run();
+
+            Console.WriteLine("Reload finished " + config.FileName);
+            Console.WriteLine("Elapsed " + result.Elapsed);
+            Console.WriteLine("Tables count " + result.Tables);
+            Console.WriteLine("Rows count " + result.Rows);
         }
 
         public static void Unload(Configuration config)
