@@ -48,7 +48,7 @@ namespace StarDump
             var host = new AppHostBuilder().AddCommandLine(args).Build();
             
             host.Start();
-            ResultRow.RegisterDatabaseType();
+            UnloadRow.RegisterDatabaseType();
             cn.Open();
 
             string sql = helper.GenerateCreateMetadataTables();
@@ -78,8 +78,8 @@ namespace StarDump
                     this.ExecuteNonQuery(sql, cn);
 
                     string query = "SELECT * FROM \"" + t.FullName + "\"";
-                    var rows = Db.SQL<ResultRow>(query);
-                    List<ResultRow> temp = new List<ResultRow>();
+                    var rows = Db.SQL<UnloadRow>(query);
+                    List<UnloadRow> temp = new List<UnloadRow>();
 
                     foreach (var r in rows)
                     {

@@ -97,7 +97,7 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateInsertInto(string tableName, Starcounter.Metadata.Column[] columns, ResultRow row)
+        public string GenerateInsertInto(string tableName, Starcounter.Metadata.Column[] columns, UnloadRow row)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -108,7 +108,7 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateInsertInto(string tableName, Starcounter.Metadata.Column[] columns, ResultRow[] rows)
+        public string GenerateInsertInto(string tableName, Starcounter.Metadata.Column[] columns, UnloadRow[] rows)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -116,7 +116,7 @@ namespace StarDump
 
             for (int i = 0; i < rows.Length; i++)
             {
-                ResultRow row = rows[i];
+                UnloadRow row = rows[i];
 
                 if (i > 0)
                 {
@@ -145,6 +145,11 @@ namespace StarDump
             sql.Append(" FROM `").Append(tableName).Append("`");
 
             return sql.ToString();
+        }
+
+        public string GenerateSelectMetadataColumns(long tableId)
+        {
+            return "SELECT `Id`, `TableId`, `Name`, `DataType`, `ReferenceType`, `Nullable`, `Inherited` FROM `Starcounter.Metadata.Column` WHERE `TableId` = " + tableId;
         }
 
         public string GetSqlType(string dataTypeName)
@@ -276,7 +281,7 @@ namespace StarDump
             }
         }
 
-        protected void GenerateInsertInto(Starcounter.Metadata.Column[] columns, ResultRow row, StringBuilder sql)
+        protected void GenerateInsertInto(Starcounter.Metadata.Column[] columns, UnloadRow row, StringBuilder sql)
         {
             sql.Append("(").Append((long)row.DbGetIdentity());
 

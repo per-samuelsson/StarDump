@@ -14,10 +14,12 @@ namespace StarDump
     public class Reload
     {
         public Configuration Configuration { get; protected set; }
+        public SqlHelper SqlHelper { get; protected set; }
 
         public Reload(Configuration config)
         {
             this.Configuration = config;
+            this.SqlHelper = new SqlHelper();
         }
 
         public RunResult Run()
@@ -32,7 +34,6 @@ namespace StarDump
                 throw new FileNotFoundException(fi.FullName);
             }
 
-            SqlHelper helper = new SqlHelper();
             string connectionString = string.Format("Data Source={0}", fi.FullName);
             SqliteConnection cn = new SqliteConnection(connectionString);
 
@@ -46,26 +47,6 @@ namespace StarDump
             cn.Close();
 
             return null;
-        }
-
-        public class ReloadTable
-        {
-            public long Id { get; set; }
-            public string Name { get; set; }
-            public long ParentId { get; set; }
-            public string ParentName { get; set; }
-            public bool Created { get; set; }
-        }
-
-        public class ReloadColumn
-        {
-            public long Id { get; set; }
-            public long TableId { get; set; }
-            public string Name { get; set; }
-            public string DataType { get; set; }
-            public string ReferenceType { get; set; }
-            public bool Nullable { get; set; }
-            public bool Inherited { get; set; }
         }
 
         protected Dictionary<string, byte> typeMap = new Dictionary<string, byte>()
@@ -171,22 +152,21 @@ namespace StarDump
 
         protected void InsertTableData(SqliteConnection cn, ReloadTable table, List<ReloadColumn> columns)
         {
-            SqlHelper helper = new SqlHelper();
-            string sql = helper.GenerateSelectFrom(table.Name, columns.Select(x => x.Name).ToArray());
+            string sql = this.SqlHelper.GenerateSelectFrom(table.Name, columns.Select(x => x.Name).ToArray());
             SqliteCommand cmd = new SqliteCommand(sql, cn);
             SqliteDataReader reader = cmd.ExecuteReader();
 
             while (reader.Read())
             {
                 long id = reader.GetInt64(0);
-                ResultRow row = new ResultRow((ulong)id, 0);
+                UnloadRow row = new UnloadRow((ulong)id, 0);
 
                 for (int i = 0; i < columns.Count; i++)
                 {
                     ReloadColumn c = columns[i];
                     object value = reader.GetValue(i + 1);
 
-                    row[c.Name] = helper.ConvertFromSqliteToStarcounter(c.DataType, value);
+                    row[c.Name] = this.SqlHelper.ConvertFromSqliteToStarcounter(c.DataType, value);
                 }
 
                 row.Insert(table.Name, columns.ToArray());
@@ -197,7 +177,7 @@ namespace StarDump
 
         protected List<ReloadColumn> SelectColumns(SqliteConnection cn, long tableId)
         {
-            string sql = "SELECT `Id`, `TableId`, `Name`, `DataType`, `ReferenceType`, `Nullable`, `Inherited` FROM `Starcounter.Metadata.Column` WHERE `TableId` = " + tableId;
+            string sql = this.SqlHelper.GenerateSelectMetadataColumns(tableId);
             List<ReloadColumn> columns = new List<ReloadColumn>();
             SqliteCommand cmd = new SqliteCommand(sql, cn);
             SqliteDataReader reader = cmd.ExecuteReader(); 

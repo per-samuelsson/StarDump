@@ -6,20 +6,20 @@ using Starcounter.Database.Interop;
 
 namespace StarDump
 {
-    public class ResultRow : Dictionary<string, object>, Starcounter.Abstractions.Database.IDbProxy
+    public class UnloadRow : Dictionary<string, object>, Starcounter.Abstractions.Database.IDbProxy
     {
         public const string DbIdKey = "__dbId";
         public const string DbRefKey = "__dbRef";
 
         public static void RegisterDatabaseType()
         {
-            Db.BindDatabaseClass(typeof(ResultRow), (dbId, dbRef) => 
+            Db.BindDatabaseClass(typeof(UnloadRow), (dbId, dbRef) => 
             {
-                return new ResultRow(dbId, dbRef);
+                return new UnloadRow(dbId, dbRef);
             });
         }
 
-        public ResultRow(ulong dbId, ulong dbRef)
+        public UnloadRow(ulong dbId, ulong dbRef)
         {
             this[DbIdKey] = dbId;
             this[DbRefKey] = dbRef;
@@ -46,7 +46,7 @@ namespace StarDump
         /// <summary>
         /// Inserts current ResultRow into database and sets it's value. Should be called inside a <see reference="Db.Transact">transaction</see>.
         /// </summary>
-        public void Insert(string tableName, Reload.ReloadColumn[] columns)
+        public void Insert(string tableName, ReloadColumn[] columns)
         {
             ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
             ulong crudHandle;
@@ -56,7 +56,7 @@ namespace StarDump
             Db.MetalayerCheck(Starcounter.Database.Interop.sccrud.star_crud_GetCreateHandle(dbHandle, tableName, out crudHandle));
             DbCrud.CreateWithId(dbId, out dbRef, crudHandle);
 
-            foreach (Reload.ReloadColumn c in columns)
+            foreach (ReloadColumn c in columns)
             {
                 ulong setter;
                 object value = this[c.Name];
