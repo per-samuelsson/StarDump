@@ -44,15 +44,15 @@ namespace StarDump
             string connectionString = string.Format("Data Source={0}", fi.FullName);
             SqliteConnection cn = new SqliteConnection(connectionString);
 
+            string[] args = new string[] { config.DatabaseName };
+            var host = new AppHostBuilder().AddCommandLine(args).Build();
+            
+            host.Start();
             ResultRow.RegisterDatabaseType();
             cn.Open();
 
             string sql = helper.GenerateCreateMetadataTables();
             this.ExecuteNonQuery(sql, cn);
-
-            string[] args = new string[] { config.DatabaseName };
-            var host = new AppHostBuilder().AddCommandLine(args).Build();
-            host.Start();
 
             Db.Transact(() =>
             {

@@ -285,6 +285,7 @@ namespace StarDump
                 string type = this.GetSqlType(c.DataType.Name);
                 object value = row[c.Name];
 
+                value = this.ConvertFromStarcounterToSqlite(c.DataType.Name, value);
                 sql.Append(", ");
 
                 if (value == null)

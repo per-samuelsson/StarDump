@@ -89,7 +89,7 @@ namespace StarDump
                 case "string?":
                 case "string": return DbCrud.GetString(dbId, dbRef, getter);
                 case "uint": return DbCrud.GetUInt(dbId, dbRef, getter);
-                case "ulong": return (long)DbCrud.GetULong(dbId, dbRef, getter);
+                case "ulong": return DbCrud.GetULong(dbId, dbRef, getter);
                 case "ushort": return DbCrud.GetUShort(dbId, dbRef, getter);
                 case "byte[]": return DbCrud.GetBinary(dbId, dbRef, getter);
 
@@ -114,8 +114,8 @@ namespace StarDump
                         return null;
                     }
 
-                    return (long)m.GetObjectNo();
-                case "ulong?": return (long?)DbCrud.GetNullableULong(dbId, dbRef, getter);
+                    return m.GetObjectNo();
+                case "ulong?": return DbCrud.GetNullableULong(dbId, dbRef, getter);
                 case "ushort?": return DbCrud.GetNullableUShort(dbId, dbRef, getter);
                 default: throw new NotImplementedException("The data type [" + dataTypeName + "] is not supported.");
             }
