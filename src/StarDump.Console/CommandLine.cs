@@ -74,7 +74,7 @@ namespace StarDump.Console
                         Required = false
                     }
                 },
-                Run = (x) => StarDump.Program.Unload(x)
+                Run = (x) => StarDump.CommandInterface.Unload(x)
             });
 
             Commands.Add(new Command
@@ -97,7 +97,7 @@ namespace StarDump.Console
                         SetParameterValue = (value) => Configuration.FileName = value
                     }
                 },
-                Run = (x) => Out.WriteLine("Entry point for reload")
+                Run = (x) => StarDump.CommandInterface.Reload(x)
             });
 
             Commands.Add(new Command

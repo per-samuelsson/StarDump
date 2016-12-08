@@ -2666,12 +2666,6 @@
           "Microsoft.Data.Sqlite": "1.1.0",
           "Microsoft.NETCore.App": "1.1.0",
           "Starcounter": "1.0.0"
-        },
-        "compile": {
-          "netcoreapp1.0/StarDump.dll": {}
-        },
-        "runtime": {
-          "netcoreapp1.0/StarDump.dll": {}
         }
       }
     }
@@ -7972,8 +7966,7 @@
     },
     "StarDump/1.0.0": {
       "type": "project",
-      "path": "../StarDump/project.json",
-      "msbuildProject": "../StarDump/StarDump.xproj"
+      "path": "../StarDump/project.json"
     }
   },
   "projectFileDependencyGroups": {
