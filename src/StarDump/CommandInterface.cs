@@ -37,12 +37,12 @@ namespace StarDump
 
             unload.UnloadTableStart += (sender, table) =>
             {
-                Console.WriteLine("{0}: start {1}", DateTime.Now, table.FullName);
+                Console.WriteLine("{0}: start {1}", DateTime.Now, table);
             };
 
             unload.UnloadTableFinish += (sender, table) =>
             {
-                Console.WriteLine("{0}: finish {1}", DateTime.Now, table.FullName);
+                Console.WriteLine("{0}: finish {1}", DateTime.Now, table);
             };
 
             RunResult result = unload.Run();

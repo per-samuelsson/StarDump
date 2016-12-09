@@ -14,8 +14,8 @@ namespace StarDump
     {
         public Configuration Configuration { get; protected set; }
         public SqlHelper SqlHelper { get; protected set; }
-        public event EventHandler<Starcounter.Metadata.RawView> UnloadTableStart;
-        public event EventHandler<Starcounter.Metadata.RawView> UnloadTableFinish;
+        public event EventHandler<string> UnloadTableStart;
+        public event EventHandler<string> UnloadTableFinish;
 
         public Unload(Configuration config)
         {
@@ -48,54 +48,31 @@ namespace StarDump
                 ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
                 Starcounter.Metadata.RawView[] tables = this.SelectTables();
                 tablesCount = tables.Length;
+                
+                List<Task> tasks = new List<Task>();
 
                 foreach (Starcounter.Metadata.RawView t in tables)
                 {
-                    this.UnloadTableStart?.Invoke(this, t);
+                    ulong dbId = t.GetObjectNo();
 
-                    Starcounter.Internal.Metadata.SetSpecifier specifier = DbCrud.GetSetSpecifier(t, dbHandle);
-                    Starcounter.Metadata.Column[] columns = this.SelectTableColumns(t.FullName);
-
-                    string query = "SELECT * FROM \"" + t.FullName + "\"";
-                    var rows = Db.SQL<UnloadRow>(query);
-                    List<UnloadRow> temp = new List<UnloadRow>();
-                    ulong tableRowsCount = 0;
-
-                    this.CreateTableAndInsertMetadata(cn, t, columns);
-
-                    foreach (var r in rows)
+                    // Task task = Starcounter.Database.Transaction.Current.RunAsync(() => Task.Run(() =>
+                    Task task = Task.Run(() =>
                     {
-                        bool equals = this.SetSpecifierEquals(dbHandle, specifier, r);
+                        Starcounter.Metadata.RawView table = Db.FromId<Starcounter.Metadata.RawView>(dbId);
+                        ulong tableRowsCount;
+                        this.UnloadTable(cn, table, dbHandle, out tableRowsCount);
 
-                        if (!equals)
+                        lock (this)
                         {
-                            continue;
+                            rowsCount += tableRowsCount;
                         }
+                    });
+                    // }));
 
-                        tableRowsCount++;
-                        r.Fill(t.FullName, columns);
-                        temp.Add(r);
-
-                        if (temp.Count < config.InsertRowsBufferSize)
-                        {
-                            continue;
-                        }
-
-                        this.InsertRows(cn, t.FullName, columns, temp);
-                        temp.Clear();
-                    }
-
-                    if (temp.Any())
-                    {
-                        this.InsertRows(cn, t.FullName, columns, temp);
-                    }
-
-                    sql = this.SqlHelper.GenerateUpdateMetadataTableRowsCount(t.FullName, tableRowsCount);
-                    this.ExecuteNonQuery(sql, cn);
-
-                    rowsCount += tableRowsCount;
-                    this.UnloadTableFinish?.Invoke(this, t);
+                    tasks.Add(task);
                 }
+
+                Task.WaitAll(tasks.ToArray());
             });
 
             cn.Close();
@@ -105,6 +82,54 @@ namespace StarDump
             RunResult result = new RunResult(watch.Elapsed, tablesCount, rowsCount);
 
             return result;
+        }
+
+        protected void UnloadTable(SqliteConnection cn, Starcounter.Metadata.RawView t, ulong dbHandle, out ulong rowsCount)
+        {
+            this.UnloadTableStart?.Invoke(this, t.FullName);
+
+            Starcounter.Internal.Metadata.SetSpecifier specifier = DbCrud.GetSetSpecifier(t, dbHandle);
+            Starcounter.Metadata.Column[] columns = this.SelectTableColumns(t.FullName);
+
+            string query = "SELECT * FROM \"" + t.FullName + "\"";
+            var rows = Db.SQL<UnloadRow>(query);
+            List<UnloadRow> temp = new List<UnloadRow>();
+            ulong tableRowsCount = 0;
+
+            this.CreateTableAndInsertMetadata(cn, t, columns);
+
+            foreach (var r in rows)
+            {
+                bool equals = this.SetSpecifierEquals(dbHandle, specifier, r);
+
+                if (!equals)
+                {
+                    continue;
+                }
+
+                tableRowsCount++;
+                r.Fill(t.FullName, columns);
+                temp.Add(r);
+
+                if (temp.Count < this.Configuration.InsertRowsBufferSize)
+                {
+                    continue;
+                }
+
+                this.InsertRows(cn, t.FullName, columns, temp);
+                temp.Clear();
+            }
+
+            if (temp.Any())
+            {
+                this.InsertRows(cn, t.FullName, columns, temp);
+            }
+
+            string sql = this.SqlHelper.GenerateUpdateMetadataTableRowsCount(t.FullName, tableRowsCount);
+            this.ExecuteNonQuery(sql, cn);
+
+            rowsCount = tableRowsCount;
+            this.UnloadTableFinish?.Invoke(this, t.FullName);
         }
 
         protected SqliteConnection GetConnection()
