@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Microsoft.Data.Sqlite;
 using Starcounter;
 
 namespace StarDump
@@ -103,6 +104,24 @@ namespace StarDump
             }
 
             sql.Append(", PRIMARY KEY(`ObjectNo`));");
+
+            return sql.ToString();
+        }
+
+        public string GenerateInsertIntoWithParams(string tableName, UnloadColumn[] columns)
+        {
+            StringBuilder sql = new StringBuilder();
+            
+            this.GenerateInsertInto(tableName, columns, sql);
+
+            sql.Append("(@ObjectNo");
+
+            for (int i = 0; i < columns.Length; i++)
+            {
+                sql.Append(", @").Append(columns[i].Name);
+            }
+
+            sql.Append(");");
 
             return sql.ToString();
         }
@@ -288,6 +307,30 @@ namespace StarDump
 
                 case "byte[]":
                 default: throw new NotImplementedException("The data type [" + starcounterDataTypeName + "] is not supported.");
+            }
+        }
+
+        public void SetupSqliteConnection(SqliteConnection cn)
+        {
+            // http://blog.quibb.org/2010/08/fast-bulk-inserts-into-sqlite/
+            this.ExecuteNonQuery("PRAGMA synchronous=OFF", cn);
+            this.ExecuteNonQuery("PRAGMA count_changes=OFF", cn);
+            // this.ExecuteNonQuery("PRAGMA journal_mode=MEMORY", cn);
+            this.ExecuteNonQuery("PRAGMA journal_mode=OFF", cn);
+            this.ExecuteNonQuery("PRAGMA temp_store=MEMORY", cn);
+        }
+
+        public void ExecuteNonQuery(string sql, SqliteConnection cn)
+        {
+            SqliteCommand cmd = new SqliteCommand(sql, cn);
+
+            try
+            {
+                cmd.ExecuteNonQuery();
+            }
+            catch (System.Exception ex)
+            {
+                throw new Exception("Unable to execute SQL: " + sql, ex);
             }
         }
 

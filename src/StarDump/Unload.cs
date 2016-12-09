@@ -39,9 +39,10 @@ namespace StarDump
             host.Start();
             UnloadRow.RegisterDatabaseType();
             cn.Open();
+            this.SqlHelper.SetupSqliteConnection(cn);
 
             string sql = this.SqlHelper.GenerateCreateMetadataTables();
-            this.ExecuteNonQuery(sql, cn);
+            this.SqlHelper.ExecuteNonQuery(sql, cn);
 
             Db.Transact(() =>
             {
@@ -50,6 +51,8 @@ namespace StarDump
                 tablesCount = tables.Length;
                 
                 List<Task> tasks = new List<Task>();
+
+                this.SqlHelper.ExecuteNonQuery("begin", cn);
 
                 foreach (Starcounter.Metadata.RawView t in tables)
                 {
@@ -62,6 +65,7 @@ namespace StarDump
                     var rows = Db.SQL<UnloadRow>(query);
                     List<UnloadRow> temp = new List<UnloadRow>();
                     ulong tableRowsCount = 0;
+                    // string insertSql = this.SqlHelper.GenerateInsertIntoWithParams(t.FullName, columns);
 
                     this.CreateTableAndInsertMetadata(cn, t, columns);
 
@@ -85,6 +89,8 @@ namespace StarDump
 
                         tasks.Add(this.InsertRows(cn, t.FullName, columns, temp.ToArray()));
                         temp.Clear();
+
+                        // tasks.Add(this.InsertRowWithParams(cn, insertSql, columns, r));
                     }
 
                     if (temp.Any())
@@ -93,13 +99,14 @@ namespace StarDump
                     }
 
                     sql = this.SqlHelper.GenerateUpdateMetadataTableRowsCount(t.FullName, tableRowsCount);
-                    this.ExecuteNonQuery(sql, cn);
+                    this.SqlHelper.ExecuteNonQuery(sql, cn);
 
                     rowsCount += tableRowsCount;
                     this.UnloadTableFinish?.Invoke(this, t.FullName);
                 }
 
                 Task.WaitAll(tasks.ToArray());
+                this.SqlHelper.ExecuteNonQuery("end", cn);
             });
 
             cn.Close();
@@ -133,13 +140,13 @@ namespace StarDump
         protected void CreateTableAndInsertMetadata(SqliteConnection cn, Starcounter.Metadata.RawView table, UnloadColumn[] columns)
         {
             string sql = this.SqlHelper.GenerateInsertMetadataTable(table);
-            this.ExecuteNonQuery(sql, cn);
+            this.SqlHelper.ExecuteNonQuery(sql, cn);
 
             sql = this.SqlHelper.GenerateInsertMetadataColumns(table, columns);
-            this.ExecuteNonQuery(sql, cn);
+            this.SqlHelper.ExecuteNonQuery(sql, cn);
 
             sql = this.SqlHelper.GenerateCreateTable(table, columns);
-            this.ExecuteNonQuery(sql, cn);
+            this.SqlHelper.ExecuteNonQuery(sql, cn);
         }
 
         protected Task InsertRows(SqliteConnection cn, string tableName, UnloadColumn[] columns, UnloadRow[] rows)
@@ -147,7 +154,38 @@ namespace StarDump
             return Task.Run(() =>
             {
                 string sql = this.SqlHelper.GenerateInsertInto(tableName, columns, rows);
-                this.ExecuteNonQuery(sql, cn);
+                this.SqlHelper.ExecuteNonQuery(sql, cn);
+            });
+        }
+
+        protected Task InsertRowWithParams(SqliteConnection cn, string sql, UnloadColumn[] columns, UnloadRow row)
+        {
+            return Task.Run(() =>
+            {
+                SqliteCommand cmd = new SqliteCommand(sql, cn);
+
+                cmd.Parameters.Add(new SqliteParameter() { ParameterName = "@ObjectNo", Value = row.DbGetIdentity() });
+
+                foreach (UnloadColumn c in columns)
+                {
+                    SqliteParameter p = new SqliteParameter();
+                    object value = row[c.Name];
+                    
+                    p.ParameterName = "@" + c.Name;
+
+                    if (value == null)
+                    {
+                        p.Value = System.DBNull.Value;
+                    }
+                    else
+                    {
+                        p.Value = value;
+                    }
+
+                    cmd.Parameters.Add(p);
+                }
+
+                cmd.ExecuteNonQuery();
             });
         }
 
@@ -201,20 +239,6 @@ namespace StarDump
             }
 
             return columns.Select(x => new UnloadColumn(x)).ToArray();
-        }
-
-        protected void ExecuteNonQuery(string sql, SqliteConnection cn)
-        {
-            SqliteCommand cmd = new SqliteCommand(sql, cn);
-
-            try
-            {
-                cmd.ExecuteNonQuery();
-            }
-            catch (System.Exception ex)
-            {
-                throw new Exception("Unable to execute SQL: " + sql, ex);
-            }
         }
     }
 }
