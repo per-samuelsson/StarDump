@@ -15,12 +15,12 @@ namespace StarDump
 
             reload.ReloadTableStart += (sender, table) =>
             {
-                Console.WriteLine("{0}: start {1}", DateTime.Now, table.Name);
+                Console.WriteLine("{0}: start {1}", DateTime.Now, table);
             };
 
             reload.ReloadTableFinish += (sender, table) =>
             {
-                Console.WriteLine("{0}: finish {1}", DateTime.Now, table.Name);
+                Console.WriteLine("{0}: finish {1}", DateTime.Now, table);
             };
 
             RunResult result = reload.Run();

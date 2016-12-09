@@ -16,8 +16,8 @@ namespace StarDump
     {
         public Configuration Configuration { get; protected set; }
         public SqlHelper SqlHelper { get; protected set; }
-        public event EventHandler<ReloadTable> ReloadTableStart;
-        public event EventHandler<ReloadTable> ReloadTableFinish;
+        public event EventHandler<string> ReloadTableStart;
+        public event EventHandler<string> ReloadTableFinish;
 
         public Reload(Configuration config)
         {
@@ -141,7 +141,7 @@ namespace StarDump
 
         protected void CreateTableAndInsertData(SqliteConnection cn, ReloadTable table, out ulong rowsCount)
         {
-            this.ReloadTableStart?.Invoke(this, table);
+            this.ReloadTableStart?.Invoke(this, table.Name);
 
             List<ReloadColumn> columns = this.SelectColumns(cn, table.Id);
 
@@ -151,7 +151,7 @@ namespace StarDump
             });
             
             this.InsertTableData(cn, table, columns, out rowsCount);
-            this.ReloadTableFinish?.Invoke(this, table);
+            this.ReloadTableFinish?.Invoke(this, table.Name);
         }
 
         protected void CreateTable(ReloadTable table, List<ReloadColumn> columns)
