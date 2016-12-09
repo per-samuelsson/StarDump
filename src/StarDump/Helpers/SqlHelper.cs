@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Microsoft.Data.Sqlite;
 using Starcounter;
 
 namespace StarDump
@@ -47,7 +48,7 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateInsertMetadataColumns(Starcounter.Metadata.RawView table, Starcounter.Metadata.Column[] columns)
+        public string GenerateInsertMetadataColumns(Starcounter.Metadata.RawView table, UnloadColumn[] columns)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -55,18 +56,18 @@ namespace StarDump
 
             for (int i = 0; i < columns.Length; i++)
             {
-                Starcounter.Metadata.Column col = columns[i];
+                UnloadColumn col = columns[i];
 
                 if (i > 0)
                 {
                     sql.Append(", ");
                 }
 
-                sql.Append("(").Append((long)col.GetObjectNo()).Append(", ")
+                sql.Append("(").Append((long)col.ObjectId).Append(", ")
                     .Append((long)table.GetObjectNo()).Append(", '").Append(col.Name).Append("', '")
-                    .Append(col.DataType.Name).Append("', ");
+                    .Append(col.DataTypeName).Append("', ");
 
-                if (col.DataType.Name == "reference")
+                if (col.DataTypeName == "reference")
                 {
                     // TODO: insert reference type name
                     sql.Append("NULL");
@@ -84,7 +85,7 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateCreateTable(Starcounter.Metadata.RawView table, Starcounter.Metadata.Column[] columns)
+        public string GenerateCreateTable(Starcounter.Metadata.RawView table, UnloadColumn[] columns)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -92,7 +93,7 @@ namespace StarDump
 
             foreach (var c in columns)
             {
-                string type = this.GetSqlType(c.DataType.Name);
+                string type = this.GetSqlType(c.DataTypeName);
 
                 sql.Append(", `").Append(c.Name).Append("` ").Append(type);
 
@@ -107,7 +108,25 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateInsertInto(string tableName, Starcounter.Metadata.Column[] columns, UnloadRow row)
+        public string GenerateInsertIntoWithParams(string tableName, UnloadColumn[] columns)
+        {
+            StringBuilder sql = new StringBuilder();
+            
+            this.GenerateInsertInto(tableName, columns, sql);
+
+            sql.Append("(@ObjectNo");
+
+            for (int i = 0; i < columns.Length; i++)
+            {
+                sql.Append(", @").Append(columns[i].Name);
+            }
+
+            sql.Append(");");
+
+            return sql.ToString();
+        }
+
+        public string GenerateInsertInto(string tableName, UnloadColumn[] columns, UnloadRow row)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -118,7 +137,7 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateInsertInto(string tableName, Starcounter.Metadata.Column[] columns, UnloadRow[] rows)
+        public string GenerateInsertInto(string tableName, UnloadColumn[] columns, UnloadRow[] rows)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -291,16 +310,40 @@ namespace StarDump
             }
         }
 
-        protected void GenerateInsertInto(Starcounter.Metadata.Column[] columns, UnloadRow row, StringBuilder sql)
+        public void SetupSqliteConnection(SqliteConnection cn)
+        {
+            // http://blog.quibb.org/2010/08/fast-bulk-inserts-into-sqlite/
+            this.ExecuteNonQuery("PRAGMA synchronous=OFF", cn);
+            this.ExecuteNonQuery("PRAGMA count_changes=OFF", cn);
+            // this.ExecuteNonQuery("PRAGMA journal_mode=MEMORY", cn);
+            this.ExecuteNonQuery("PRAGMA journal_mode=OFF", cn);
+            this.ExecuteNonQuery("PRAGMA temp_store=MEMORY", cn);
+        }
+
+        public void ExecuteNonQuery(string sql, SqliteConnection cn)
+        {
+            SqliteCommand cmd = new SqliteCommand(sql, cn);
+
+            try
+            {
+                cmd.ExecuteNonQuery();
+            }
+            catch (System.Exception ex)
+            {
+                throw new Exception("Unable to execute SQL: " + sql, ex);
+            }
+        }
+
+        protected void GenerateInsertInto(UnloadColumn[] columns, UnloadRow row, StringBuilder sql)
         {
             sql.Append("(").Append((long)row.DbGetIdentity());
 
             foreach (var c in columns)
             {
-                string type = this.GetSqlType(c.DataType.Name);
+                string type = this.GetSqlType(c.DataTypeName);
                 object value = row[c.Name];
 
-                value = this.ConvertFromStarcounterToSqlite(c.DataType.Name, value);
+                value = this.ConvertFromStarcounterToSqlite(c.DataTypeName, value);
                 sql.Append(", ");
 
                 if (value == null)
@@ -321,7 +364,7 @@ namespace StarDump
             sql.Append(") ");
         }
 
-        protected void GenerateInsertInto(string tableName, Starcounter.Metadata.Column[] columns, StringBuilder sql)
+        protected void GenerateInsertInto(string tableName, UnloadColumn[] columns, StringBuilder sql)
         {
             sql.Append("INSERT INTO `").Append(tableName).Append("` (`ObjectNo`");
 
