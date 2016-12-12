@@ -318,6 +318,9 @@ namespace StarDump
             // this.ExecuteNonQuery("PRAGMA journal_mode=MEMORY", cn);
             this.ExecuteNonQuery("PRAGMA journal_mode=OFF", cn);
             this.ExecuteNonQuery("PRAGMA temp_store=MEMORY", cn);
+            // this.ExecuteNonQuery("PRAGMA cache_size=-500000", cn);
+            // this.ExecuteNonQuery("PRAGMA cache_spill=50", cn);
+            this.ExecuteNonQuery("PRAGMA read_uncommitted=TRUE", cn);
         }
 
         public void ExecuteNonQuery(string sql, SqliteConnection cn)
