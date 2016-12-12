@@ -74,7 +74,7 @@ namespace StarDump.Console
                         Required = false
                     }
                 },
-                Run = (x) => StarDump.CommandInterface.Unload(x)
+                Run = (x) => { return StarDump.CommandInterface.Unload(x); }
             });
 
             Commands.Add(new Command
@@ -97,7 +97,7 @@ namespace StarDump.Console
                         SetParameterValue = (value) => Configuration.FileName = value
                     }
                 },
-                Run = (x) => StarDump.CommandInterface.Reload(x)
+                Run = (x) => { return StarDump.CommandInterface.Reload(x); }
             });
 
             Commands.Add(new Command
@@ -105,7 +105,7 @@ namespace StarDump.Console
                 Name = COMMAND_HELP,
                 Description = "Show help of all commands",
                 Usage = "stardump help [<command options>]",
-                Run = (x) => { PrintHelp(); }
+                Run = (x) => { return PrintHelp(); }
             });
 
             ConfigurationInit();
@@ -250,7 +250,7 @@ namespace StarDump.Console
             return true;
         }
 
-        private void PrintHelp()
+        private bool PrintHelp()
         {
             Out.WriteLine("Usage: stardump <command> [<command options>]");
             Out.WriteLine();
@@ -259,6 +259,8 @@ namespace StarDump.Console
             {
                 Out.WriteLine(c.ToString());
             }
+
+            return true;
         }
 
         private void PrintCommand(Command command)
@@ -294,7 +296,7 @@ namespace StarDump.Console
         public class Command : BaseCommand
         {
             public List<Option> CommandOptions { get; set; } = new List<Option>();
-            public Action<Configuration> Run { get; set; }
+            public Func<Configuration, bool> Run { get; set; }
             public override string ToString()
             {
                 return string.Format("{0}{1}{2}", INDENT, Name.PadRight(25), Description);

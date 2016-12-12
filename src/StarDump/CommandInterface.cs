@@ -9,7 +9,7 @@ namespace StarDump
 {
     public class CommandInterface
     {
-        public static void Reload(Configuration config)
+        public static bool Reload(Configuration config)
         {
             Reload reload = new Reload(config);
 
@@ -29,9 +29,11 @@ namespace StarDump
             Console.WriteLine("Elapsed " + result.Elapsed);
             Console.WriteLine("Tables count " + result.Tables);
             Console.WriteLine("Rows count " + result.Rows);
+
+            return true;
         }
 
-        public static void Unload(Configuration config)
+        public static bool Unload(Configuration config)
         {
             Unload unload = new Unload(config);
 
@@ -51,6 +53,8 @@ namespace StarDump
             Console.WriteLine("Elapsed " + result.Elapsed);
             Console.WriteLine("Tables count " + result.Tables);
             Console.WriteLine("Rows count " + result.Rows);
+
+            return true;
         }
 
         public static void SqliteMain(string[] args)
