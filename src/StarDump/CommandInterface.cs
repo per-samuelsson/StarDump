@@ -17,15 +17,18 @@ namespace StarDump
 
             Reload reload = new Reload(config);
 
-            reload.ReloadTableStart += (sender, table) =>
+            if (config.Verbose > 0)
             {
-                Out.WriteLine(string.Format("{0}: start {1}", DateTime.Now, table));
-            };
+                reload.ReloadTableStart += (sender, table) =>
+                {
+                    Out.WriteLine(string.Format("{0}: start {1}", DateTime.Now, table));
+                };
 
-            reload.ReloadTableFinish += (sender, table) =>
-            {
-                Out.WriteLine(string.Format("{0}: finish {1}", DateTime.Now, table));
-            };
+                reload.ReloadTableFinish += (sender, table) =>
+                {
+                    Out.WriteLine(string.Format("{0}: finish {1}", DateTime.Now, table));
+                };
+            }
 
             RunResult result = reload.Run();
 
@@ -48,15 +51,18 @@ namespace StarDump
 
             Unload unload = new Unload(config);
 
-            unload.UnloadTableStart += (sender, table) =>
+            if (config.Verbose > 0)
             {
-                Out.WriteLine(string.Format("{0}: start {1}", DateTime.Now, table));
-            };
+                unload.UnloadTableStart += (sender, table) =>
+                {
+                    Out.WriteLine(string.Format("{0}: start {1}", DateTime.Now, table));
+                };
 
-            unload.UnloadTableFinish += (sender, table) =>
-            {
-                Out.WriteLine(string.Format("{0}: finish {1}", DateTime.Now, table));
-            };
+                unload.UnloadTableFinish += (sender, table) =>
+                {
+                    Out.WriteLine(string.Format("{0}: finish {1}", DateTime.Now, table));
+                };
+            }
 
             RunResult result = unload.Run();
 
