@@ -44,16 +44,7 @@ namespace StarDump
             SqliteConnection cn = new SqliteConnection(connectionString);
 
             string[] args = new string[] { config.DatabaseName };
-            Starcounter.Abstractions.Hosting.IAppHost host;
-            try
-            {
-                host = new AppHostBuilder().AddCommandLine(args).Build();
-            }
-            catch (Exception e)
-            {
-                CommandInterface.Out.WriteErrorLine(e.ToString());
-                return null;
-            }
+            var host = new AppHostBuilder().AddCommandLine(args).Build();
 
             host.Start();
             cn.Open();
