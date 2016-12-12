@@ -20,6 +20,7 @@ namespace StarDump.Console
         private Dictionary<Option, string> OptionsUsed { get; set; } = new Dictionary<Option, string>();
 
         public StarDump.Configuration Configuration { get; set; }
+        public ConsoleOutput Out { get; set; }
 
         public CommandLine()
         {
@@ -74,7 +75,7 @@ namespace StarDump.Console
                         Required = false
                     }
                 },
-                Run = (x) => StarDump.CommandInterface.Unload(x)
+                Run = (x) => { return StarDump.CommandInterface.Unload(x); }
             });
 
             Commands.Add(new Command
@@ -97,7 +98,7 @@ namespace StarDump.Console
                         SetParameterValue = (value) => Configuration.FileName = value
                     }
                 },
-                Run = (x) => StarDump.CommandInterface.Reload(x)
+                Run = (x) => { return StarDump.CommandInterface.Reload(x); }
             });
 
             Commands.Add(new Command
@@ -105,8 +106,10 @@ namespace StarDump.Console
                 Name = COMMAND_HELP,
                 Description = "Show help of all commands",
                 Usage = "stardump help [<command options>]",
-                Run = (x) => { PrintHelp(); }
+                Run = (x) => { return PrintHelp(); }
             });
+
+            this.Out = new ConsoleOutput();
 
             ConfigurationInit();
         }
@@ -124,6 +127,8 @@ namespace StarDump.Console
             string path = Path.GetTempPath();
 
             Configuration.FileName = Path.Combine(path, name);
+
+            Configuration.Output = this.Out;
         }
 
         public bool Parse(string[] args)
@@ -240,17 +245,16 @@ namespace StarDump.Console
         {
             try
             {
-                CurrentCommand?.Run(Configuration);
+                return (bool)CurrentCommand?.Run(Configuration);
             }
-            catch
+            catch (Exception e)
             {
+                Out.WriteErrorLine(e.ToString());
                 return false;
             }
-            
-            return true;
         }
 
-        private void PrintHelp()
+        private bool PrintHelp()
         {
             Out.WriteLine("Usage: stardump <command> [<command options>]");
             Out.WriteLine();
@@ -259,6 +263,8 @@ namespace StarDump.Console
             {
                 Out.WriteLine(c.ToString());
             }
+
+            return true;
         }
 
         private void PrintCommand(Command command)
@@ -294,7 +300,7 @@ namespace StarDump.Console
         public class Command : BaseCommand
         {
             public List<Option> CommandOptions { get; set; } = new List<Option>();
-            public Action<Configuration> Run { get; set; }
+            public Func<Configuration, bool> Run { get; set; }
             public override string ToString()
             {
                 return string.Format("{0}{1}{2}", INDENT, Name.PadRight(25), Description);

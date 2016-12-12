@@ -9,100 +9,68 @@ namespace StarDump
 {
     public class CommandInterface
     {
-        public static void Reload(Configuration config)
+        internal static Output Out;
+
+        public static bool Reload(Configuration config)
         {
+            Out = config.Output;
+
             Reload reload = new Reload(config);
 
-            reload.ReloadTableStart += (sender, table) =>
+            if (config.Verbose > 0)
             {
-                Console.WriteLine("{0}: start {1}", DateTime.Now, table);
-            };
+                reload.ReloadTableStart += (sender, table) =>
+                {
+                    Out.WriteLine(string.Format("{0}: start {1}", DateTime.Now, table));
+                };
 
-            reload.ReloadTableFinish += (sender, table) =>
-            {
-                Console.WriteLine("{0}: finish {1}", DateTime.Now, table);
-            };
+                reload.ReloadTableFinish += (sender, table) =>
+                {
+                    Out.WriteLine(string.Format("{0}: finish {1}", DateTime.Now, table));
+                };
+            }
 
-            Console.WriteLine("Reload started " + config.FileName);
+            Out.WriteLine("Reload started " + config.FileName);
 
             RunResult result = reload.Run();
 
-            Console.WriteLine("Reload finished " + config.FileName);
-            Console.WriteLine("Elapsed " + result.Elapsed);
-            Console.WriteLine("Tables count " + result.Tables);
-            Console.WriteLine("Rows count " + result.Rows);
+            if (result == null)
+            {
+                return false;
+            }
+
+            Out.WriteLine("Reload finished " + config.FileName);
+            Out.WriteLine("Elapsed " + result.Elapsed);
+            Out.WriteLine("Tables count " + result.Tables);
+            Out.WriteLine("Rows count " + result.Rows);
+
+            return true;
         }
 
-        public static void Unload(Configuration config)
+        public static bool Unload(Configuration config)
         {
+            Out = config.Output;
+
             Unload unload = new Unload(config);
-            ulong count = 0;
 
-            unload.RowsChunkUnloaded += (sender, table) =>
+            if (config.Verbose > 0)
             {
-                count += (ulong)config.InsertRowsBufferSize;
-
-                if (count % 100000 == 0)
+                unload.RowsChunkUnloaded += (sender, table) =>
                 {
-                    Console.Write(".");
-                }
-            };
+                    Out.WriteLine(string.Format("{0}: {1} {2} rows unloaded", DateTime.Now, config.InsertRowsBufferSize, table));
+                };
+            }
 
-            Console.WriteLine("Unload started " + config.FileName);
+            Out.WriteLine("Unload started " + config.FileName);
 
             RunResult result = unload.Run();
 
-            Console.WriteLine();
-            Console.WriteLine("Unload finished " + config.FileName);
-            Console.WriteLine("Elapsed " + result.Elapsed);
-            Console.WriteLine("Tables count " + result.Tables);
-            Console.WriteLine("Rows count " + result.Rows);
-        }
+            Out.WriteLine("Unload finished " + config.FileName);
+            Out.WriteLine("Elapsed " + result.Elapsed);
+            Out.WriteLine("Tables count " + result.Tables);
+            Out.WriteLine("Rows count " + result.Rows);
 
-        public static void SqliteMain(string[] args)
-        {
-            string sqliteFileRoot = "D:/Temp/Core/Database";
-            string sqliteFileName = "MySQLiteDatabase.sqlite3";
-            FileInfo fi = new FileInfo(Path.Combine(sqliteFileRoot, sqliteFileName));
-
-            if (!fi.Directory.Exists)
-            {
-                fi.Directory.Create();
-            }
-
-            string connectionString = string.Format("Data Source={0}", fi.FullName);
-            SqliteConnection cn = new SqliteConnection(connectionString);
-            SqliteCommand cmd = null;
-
-            cn.Open();
-            Console.WriteLine("Connection open: " + fi.FullName);
-
-            cmd = new SqliteCommand("CREATE TABLE IF NOT EXISTS `Item` (`ObjectNo` INTEGER NOT NULL, `Name` TEXT NOT NULL, PRIMARY KEY(`ObjectNo`));", cn);
-            cmd.ExecuteNonQuery();
-            Console.WriteLine("Table 'Item' created");
-
-            long? max;
-
-            cmd = new SqliteCommand("SELECT MAX(ObjectNo) FROM Item", cn);
-            max = cmd.ExecuteScalar() as long?;
-
-            if (max == null)
-            {
-                max = 0;
-            }
-            else
-            {
-                max++;
-            }
-
-            cmd = new SqliteCommand("INSERT INTO `Item` (ObjectNo, Name) VALUES (@ObjectNo, @Name);", cn);
-            cmd.Parameters.Add(new SqliteParameter() { ParameterName = "@ObjectNo", Value = max });
-            cmd.Parameters.Add(new SqliteParameter() { ParameterName = "@Name", Value = "Item " + max });
-            cmd.ExecuteNonQuery();
-            Console.WriteLine("Item {0} inserted", max);
-
-            cn.Close();
-            Console.WriteLine("Connection closed");
+            return true;
         }
     }
 }
