@@ -20,6 +20,7 @@ namespace StarDump.Console
         private Dictionary<Option, string> OptionsUsed { get; set; } = new Dictionary<Option, string>();
 
         public StarDump.Configuration Configuration { get; set; }
+        public ConsoleOutput Out { get; set; }
 
         public CommandLine()
         {
@@ -108,6 +109,8 @@ namespace StarDump.Console
                 Run = (x) => { return PrintHelp(); }
             });
 
+            this.Out = new ConsoleOutput();
+
             ConfigurationInit();
         }
 
@@ -124,6 +127,8 @@ namespace StarDump.Console
             string path = Path.GetTempPath();
 
             Configuration.FileName = Path.Combine(path, name);
+
+            Configuration.Output = this.Out;
         }
 
         public bool Parse(string[] args)

@@ -17,29 +17,29 @@ namespace StarDump.Console
 
             if (commandLine.Parse(args) == false)
             {
-                Out.WriteErrorLine();
-                Out.WriteErrorLine("Argument parsing failed.");
+                commandLine.Out.WriteErrorLine();
+                commandLine.Out.WriteErrorLine("Argument parsing failed.");
                 return;
             }
 
             if (commandLine.ValidateArguments() == false)
             {
-                Out.WriteErrorLine();
-                Out.WriteErrorLine("Argument validation failed.");
+                commandLine.Out.WriteErrorLine();
+                commandLine.Out.WriteErrorLine("Argument validation failed.");
                 return;
             }
 
             if (commandLine.SetOptions() == false)
             {
-                Out.WriteErrorLine();
-                Out.WriteErrorLine("Setting command line options failed.");
+                commandLine.Out.WriteErrorLine();
+                commandLine.Out.WriteErrorLine("Setting command line options failed.");
                 return;
             }
 
             if (commandLine.Run() == false)
             {
-                Out.WriteErrorLine();
-                Out.WriteErrorLine("Execution failed.");
+                commandLine.Out.WriteErrorLine();
+                commandLine.Out.WriteErrorLine("Execution failed.");
                 return;
             }
         }

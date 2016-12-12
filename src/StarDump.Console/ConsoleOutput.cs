@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace StarDump.Console
 {
-    public class Out
+    public class ConsoleOutput : StarDump.Output
     {
-        internal static void WriteErrorLine(string message = null)
+        public override void WriteErrorLine(string message = null)
         {
             if (message == null)
             {
@@ -20,7 +20,7 @@ namespace StarDump.Console
             System.Console.ResetColor();
         }
 
-        internal static void WriteErrorLine(List<string> messages)
+        public override void WriteErrorLine(List<string> messages)
         {
             foreach (string message in messages)
             {
@@ -28,7 +28,7 @@ namespace StarDump.Console
             }
         }
 
-        internal static void WriteWarningLine(string message = null)
+        public override void WriteWarningLine(string message = null)
         {
             if (message == null)
             {
@@ -41,15 +41,15 @@ namespace StarDump.Console
             System.Console.ResetColor();
         }
 
-        internal static void WriteWarningLine(List<string> messages)
+        public override void WriteWarningLine(List<string> messages)
         {
             foreach (string message in messages)
             {
-                WriteErrorLine(message);
+                WriteWarningLine(message);
             }
         }
 
-        internal static void WriteLine(string message = null)
+        public override void WriteLine(string message = null)
         {
             if (message == null)
             {
@@ -60,7 +60,7 @@ namespace StarDump.Console
             System.Console.WriteLine(message);
         }
 
-        internal static void WriteLine(List<string> messages)
+        public override void WriteLine(List<string> messages)
         {
             foreach (string message in messages)
             {

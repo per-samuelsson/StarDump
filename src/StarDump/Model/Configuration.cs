@@ -17,6 +17,8 @@ namespace StarDump
             string path = Path.GetTempPath();
 
             this.FileName = Path.Combine(path, name);
+
+            this.Output = new Output();
         }
 
         public int Verbose { get; set; }
@@ -25,6 +27,7 @@ namespace StarDump
         public string[] SkipColumnPrefixes { get; set; }
         public string[] SkipTablePrefixes { get; set; }
         public int InsertRowsBufferSize { get; set; }
+        public Output Output { get; set; }
 
         public FileInfo FileInfo
         {
