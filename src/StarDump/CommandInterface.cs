@@ -29,6 +29,11 @@ namespace StarDump
 
             RunResult result = reload.Run();
 
+            if (result == null)
+            {
+                return false;
+            }
+
             Out.WriteLine("Reload finished " + config.FileName);
             Out.WriteLine("Elapsed " + result.Elapsed);
             Out.WriteLine("Tables count " + result.Tables);

@@ -35,7 +35,7 @@ namespace StarDump
 
             if (!fi.Exists)
             {
-                throw new FileNotFoundException(fi.FullName);
+                throw new FileNotFoundException("Dump file does not exist", fi.FullName);
             }
 
             watch.Start();
@@ -44,8 +44,17 @@ namespace StarDump
             SqliteConnection cn = new SqliteConnection(connectionString);
 
             string[] args = new string[] { config.DatabaseName };
-            var host = new AppHostBuilder().AddCommandLine(args).Build();
-            
+            Starcounter.Abstractions.Hosting.IAppHost host;
+            try
+            {
+                host = new AppHostBuilder().AddCommandLine(args).Build();
+            }
+            catch (Exception e)
+            {
+                CommandInterface.Out.WriteErrorLine(e.ToString());
+                return null;
+            }
+
             host.Start();
             cn.Open();
             

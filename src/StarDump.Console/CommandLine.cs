@@ -245,14 +245,13 @@ namespace StarDump.Console
         {
             try
             {
-                CurrentCommand?.Run(Configuration);
+                return (bool)CurrentCommand?.Run(Configuration);
             }
-            catch
+            catch (Exception e)
             {
+                Out.WriteErrorLine(e.ToString());
                 return false;
             }
-            
-            return true;
         }
 
         private bool PrintHelp()
