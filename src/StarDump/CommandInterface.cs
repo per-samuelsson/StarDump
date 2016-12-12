@@ -23,6 +23,8 @@ namespace StarDump
                 Console.WriteLine("{0}: finish {1}", DateTime.Now, table);
             };
 
+            Console.WriteLine("Reload started " + config.FileName);
+
             RunResult result = reload.Run();
 
             Console.WriteLine("Reload finished " + config.FileName);
@@ -34,19 +36,23 @@ namespace StarDump
         public static void Unload(Configuration config)
         {
             Unload unload = new Unload(config);
+            ulong count = 0;
 
-            unload.UnloadTableStart += (sender, table) =>
+            unload.RowsChunkUnloaded += (sender, table) =>
             {
-                Console.WriteLine("{0}: start {1}", DateTime.Now, table);
+                count += (ulong)config.InsertRowsBufferSize;
+
+                if (count % 100000 == 0)
+                {
+                    Console.Write(".");
+                }
             };
 
-            unload.UnloadTableFinish += (sender, table) =>
-            {
-                Console.WriteLine("{0}: finish {1}", DateTime.Now, table);
-            };
+            Console.WriteLine("Unload started " + config.FileName);
 
             RunResult result = unload.Run();
 
+            Console.WriteLine();
             Console.WriteLine("Unload finished " + config.FileName);
             Console.WriteLine("Elapsed " + result.Elapsed);
             Console.WriteLine("Tables count " + result.Tables);
