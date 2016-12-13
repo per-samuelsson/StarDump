@@ -57,29 +57,20 @@ namespace StarDump
                 ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
 
                 Dictionary<string, UnloadTable> tablesDictionary = this.SelectTables(dbHandle);
-                Dictionary<string, List<UnloadRow>> rowsDictionary = new Dictionary<string, List<UnloadRow>>();
-                Dictionary<string, ulong> rowsCountDictionary = new Dictionary<string, ulong>();
-                Dictionary<string, string> insertIntoDefinitionsDictionary = new Dictionary<string, string>();
-                Dictionary<string, CrudHelper> crudHelpersDictionary = new Dictionary<string, CrudHelper>();
 
                 foreach (KeyValuePair<string, UnloadTable> item in tablesDictionary)
                 {
                     string specifier = item.Key;
                     UnloadTable table = item.Value;
 
-                    rowsDictionary.Add(specifier, new List<UnloadRow>());
-                    rowsCountDictionary.Add(specifier, 0);
-
-                    insertIntoDefinitionsDictionary.Add(specifier, null);
-                    crudHelpersDictionary.Add(specifier, new CrudHelper(dbHandle, table));
-
+                    table.CrudHelper = new CrudHelper(dbHandle, table);
                     this.CreateTableAndInsertMetadata(cn, table);
 
                     tasks.Add(Task.Run(() =>
                     {
                         StringBuilder definition = new StringBuilder();
                         this.SqlHelper.GenerateInsertIntoDefinition(table, definition);
-                        insertIntoDefinitionsDictionary[specifier] = definition.ToString();
+                        table.InsertIntoDefinition = definition.ToString();
                     }));
                 }
                 
@@ -95,51 +86,44 @@ namespace StarDump
                 {
                     string specifier = this.GetSetSpecifier(dbHandle, row);
 
-                    if (!rowsDictionary.ContainsKey(specifier))
+                    if (!tablesDictionary.ContainsKey(specifier))
                     {
                         continue;
                     }
 
-                    List<UnloadRow> list = rowsDictionary[specifier];
+                    UnloadTable table = tablesDictionary[specifier];
                     var proxy = row as Starcounter.Abstractions.Database.IDbProxy;
                     UnloadRow r = new UnloadRow(proxy.DbGetIdentity(), proxy.DbGetReference());
-                    UnloadTable table = tablesDictionary[specifier];
 
-                    r.Fill(crudHelpersDictionary[specifier], table);
-                    list.Add(r);
+                    r.Fill(table);
+                    table.Rows.Add(r);
                     rowsCount++;
-                    rowsCountDictionary[specifier]++;
+                    table.RowsCount++;
 
-                    if (list.Count < this.Configuration.InsertRowsBufferSize)
+                    if (table.Rows.Count < this.Configuration.InsertRowsBufferSize)
                     {
                         continue;
                     }
 
-                    string definition = insertIntoDefinitionsDictionary[specifier];
-
-                    tasks.Add(this.InsertRows(cn, definition, table.Columns, list.ToArray()));
-                    list.Clear();
+                    tasks.Add(this.InsertRows(cn, table.InsertIntoDefinition, table.Columns, table.Rows.ToArray()));
+                    table.Rows.Clear();
                     this.RowsChunkUnloaded?.Invoke(this, table.FullName);
                 }
 
-                foreach (KeyValuePair<string, List<UnloadRow>> item in rowsDictionary)
+                foreach (KeyValuePair<string, UnloadTable> item in tablesDictionary)
                 {
                     string specifier = item.Key;
-                    UnloadTable table = tablesDictionary[specifier];
-                    ulong count = rowsCountDictionary[specifier];
+                    UnloadTable table = item.Value;
 
-                    sql = this.SqlHelper.GenerateUpdateMetadataTableRowsCount(table.FullName, count);
+                    sql = this.SqlHelper.GenerateUpdateMetadataTableRowsCount(table.FullName, table.RowsCount);
                     this.SqlHelper.ExecuteNonQuery(sql, cn);
 
-                    if (!item.Value.Any())
+                    if (!table.Rows.Any())
                     {
                         continue;
                     }
 
-                    List<UnloadRow> list = rowsDictionary[specifier];
-                    string definition = insertIntoDefinitionsDictionary[specifier];
-
-                    tasks.Add(this.InsertRows(cn, definition, table.Columns, list.ToArray()));
+                    tasks.Add(this.InsertRows(cn, table.InsertIntoDefinition, table.Columns, table.Rows.ToArray()));
                 }
             });
 

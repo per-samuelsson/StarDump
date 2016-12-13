@@ -25,7 +25,7 @@ namespace StarDump
             this[DbRefKey] = dbRef;
         }
 
-        public void Fill(CrudHelper helper, UnloadTable table)
+        public void Fill(UnloadTable table)
         {
             ulong dbId = this.DbGetIdentity();
             ulong dbRef = this.DbGetReference();
@@ -33,7 +33,7 @@ namespace StarDump
 
             foreach (var c in table.Columns)
             {
-                ulong getter = helper.GetGetter(c.Name);
+                ulong getter = table.CrudHelper.GetGetter(c.Name);
                 object value = this.GetValue(dbId, dbRef, getter, c.DataTypeName, c.Nullable);
                 
                 this[c.Name] = value;
