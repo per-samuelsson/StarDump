@@ -76,7 +76,7 @@ namespace StarDump
                     this.CreateTableAndInsertMetadata(cn, t, columns);
                 }
 
-                this.SqlHelper.ExecuteNonQuery("begin", cn);
+                this.SqlHelper.ExecuteNonQuery("BEGIN TRANSACTION", cn);
 
                 string query = "SELECT m FROM Starcounter.Internal.Metadata.MotherOfAllLayouts m";
                 var rows = Db.SQL<Starcounter.Internal.Metadata.MotherOfAllLayouts>(query);
@@ -133,7 +133,7 @@ namespace StarDump
             });
 
             Task.WaitAll(tasks.ToArray());
-            this.SqlHelper.ExecuteNonQuery("end", cn);
+            this.SqlHelper.ExecuteNonQuery("COMMIT TRANSACTION", cn);
 
             cn.Close();
             host.Dispose();
