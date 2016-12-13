@@ -84,14 +84,14 @@ namespace StarDump
 
                 foreach (Starcounter.Internal.Metadata.MotherOfAllLayouts row in rows)
                 {
+                    UnloadTable table;
                     string specifier = this.GetSetSpecifier(dbHandle, row);
 
-                    if (!tablesDictionary.ContainsKey(specifier))
+                    if (!tablesDictionary.TryGetValue(specifier, out table))
                     {
                         continue;
                     }
 
-                    UnloadTable table = tablesDictionary[specifier];
                     var proxy = row as Starcounter.Abstractions.Database.IDbProxy;
                     UnloadRow r = new UnloadRow(proxy.DbGetIdentity(), proxy.DbGetReference());
 
@@ -105,8 +105,8 @@ namespace StarDump
                         continue;
                     }
 
-                    tasks.Add(this.InsertRows(cn, table.InsertIntoDefinition, table.Columns, table.Rows.ToArray()));
-                    table.Rows.Clear();
+                    tasks.Add(this.InsertRows(cn, table.InsertIntoDefinition, table.Columns, table.Rows));
+                    table.Rows = new List<UnloadRow>();
                     this.RowsChunkUnloaded?.Invoke(this, table.FullName);
                 }
 
@@ -123,7 +123,7 @@ namespace StarDump
                         continue;
                     }
 
-                    tasks.Add(this.InsertRows(cn, table.InsertIntoDefinition, table.Columns, table.Rows.ToArray()));
+                    tasks.Add(this.InsertRows(cn, table.InsertIntoDefinition, table.Columns, table.Rows));
                 }
             });
 
@@ -170,7 +170,7 @@ namespace StarDump
             this.SqlHelper.ExecuteNonQuery(sql, cn);
         }
 
-        protected Task InsertRows(SqliteConnection cn, string insertDefinition, List<UnloadColumn> columns, UnloadRow[] rows)
+        protected Task InsertRows(SqliteConnection cn, string insertDefinition, List<UnloadColumn> columns, List<UnloadRow> rows)
         {
             return Task.Run(() =>
             {

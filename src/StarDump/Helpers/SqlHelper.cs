@@ -138,7 +138,7 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateInsertInto(UnloadTable table, UnloadRow[] rows)
+        public string GenerateInsertInto(UnloadTable table, List<UnloadRow> rows)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -326,16 +326,19 @@ namespace StarDump
             }
         }
 
-        public void GenerateInsertIntoValues(List<UnloadColumn> columns, UnloadRow[] rows, StringBuilder sql)
+        public void GenerateInsertIntoValues(List<UnloadColumn> columns, List<UnloadRow> rows, StringBuilder sql)
         {
-            for (int i = 0; i < rows.Length; i++)
+            bool first = true;
+
+            foreach (UnloadRow row in rows)
             {
-                if (i > 0)
+                if (!first)
                 {
                     sql.Append(", ");
                 }
 
-                this.GenerateInsertIntoValues(columns, rows[i], sql);
+                first = false;
+                this.GenerateInsertIntoValues(columns, row, sql);
             }
         }
 
