@@ -25,13 +25,13 @@ namespace StarDump
             this[DbRefKey] = dbRef;
         }
 
-        public void Fill(CrudHelper helper, string tableName, UnloadColumn[] columns)
+        public void Fill(CrudHelper helper, UnloadTable table)
         {
             ulong dbId = this.DbGetIdentity();
             ulong dbRef = this.DbGetReference();
             ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
 
-            foreach (var c in columns)
+            foreach (var c in table.Columns)
             {
                 ulong getter = helper.GetGetter(c.Name);
                 object value = this.GetValue(dbId, dbRef, getter, c.DataTypeName, c.Nullable);

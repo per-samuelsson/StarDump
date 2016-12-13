@@ -11,11 +11,11 @@ namespace StarDump
         public string TableName { get; protected set; }
         protected Dictionary<string, ulong> getters = new Dictionary<string, ulong>();
 
-        public CrudHelper(ulong dbHandle, string tableName, UnloadColumn[] columns)
+        public CrudHelper(ulong dbHandle, UnloadTable table)
         {
-            this.TableName = tableName;
+            this.TableName = table.FullName;
 
-            foreach (UnloadColumn c in columns)
+            foreach (UnloadColumn c in table.Columns)
             {
                 ulong getter;
 

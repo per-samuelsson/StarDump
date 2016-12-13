@@ -55,40 +55,35 @@ namespace StarDump
             Db.Transact(() =>
             {
                 ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
-                Starcounter.Metadata.RawView[] tables = this.SelectTables();
-                tablesCount = tables.Length;
 
-                Dictionary<string, Starcounter.Metadata.RawView> tablesDictionary = new Dictionary<string, Starcounter.Metadata.RawView>();
-                Dictionary<string, UnloadColumn[]> columnsDictionary;
+                Dictionary<string, UnloadTable> tablesDictionary = this.SelectTables(dbHandle);
                 Dictionary<string, List<UnloadRow>> rowsDictionary = new Dictionary<string, List<UnloadRow>>();
                 Dictionary<string, ulong> rowsCountDictionary = new Dictionary<string, ulong>();
                 Dictionary<string, string> insertIntoDefinitionsDictionary = new Dictionary<string, string>();
                 Dictionary<string, CrudHelper> crudHelpersDictionary = new Dictionary<string, CrudHelper>();
 
-                foreach (Starcounter.Metadata.RawView t in tables)
+                foreach (KeyValuePair<string, UnloadTable> item in tablesDictionary)
                 {
-                    string specifier = this.GetSetSpecifier(dbHandle, t);
-                    string tableName = t.FullName;
-                    UnloadColumn[] columns = this.SelectTableColumns(t.FullName);
+                    string specifier = item.Key;
+                    UnloadTable table = item.Value;
 
-                    tablesDictionary.Add(specifier, t);
                     rowsDictionary.Add(specifier, new List<UnloadRow>());
                     rowsCountDictionary.Add(specifier, 0);
 
                     insertIntoDefinitionsDictionary.Add(specifier, null);
-                    crudHelpersDictionary.Add(specifier, new CrudHelper(dbHandle, tableName, columns));
+                    crudHelpersDictionary.Add(specifier, new CrudHelper(dbHandle, table));
 
-                    this.CreateTableAndInsertMetadata(cn, t, columns);
+                    this.CreateTableAndInsertMetadata(cn, table);
 
                     tasks.Add(Task.Run(() =>
                     {
                         StringBuilder definition = new StringBuilder();
-                        this.SqlHelper.GenerateInsertIntoDefinition(tableName, columns, definition);
+                        this.SqlHelper.GenerateInsertIntoDefinition(table, definition);
                         insertIntoDefinitionsDictionary[specifier] = definition.ToString();
                     }));
                 }
                 
-                columnsDictionary = this.SelectTableColumns(dbHandle, tablesDictionary);
+                tablesCount = tablesDictionary.Count;
                 Task.WaitAll(tasks.ToArray());
                 tasks.Clear();
                 this.SqlHelper.ExecuteNonQuery("BEGIN TRANSACTION", cn);
@@ -108,10 +103,9 @@ namespace StarDump
                     List<UnloadRow> list = rowsDictionary[specifier];
                     var proxy = row as Starcounter.Abstractions.Database.IDbProxy;
                     UnloadRow r = new UnloadRow(proxy.DbGetIdentity(), proxy.DbGetReference());
-                    Starcounter.Metadata.RawView table = tablesDictionary[specifier];
-                    UnloadColumn[] columns = columnsDictionary[specifier];
+                    UnloadTable table = tablesDictionary[specifier];
 
-                    r.Fill(crudHelpersDictionary[specifier], table.FullName, columns);
+                    r.Fill(crudHelpersDictionary[specifier], table);
                     list.Add(r);
                     rowsCount++;
                     rowsCountDictionary[specifier]++;
@@ -123,7 +117,7 @@ namespace StarDump
 
                     string definition = insertIntoDefinitionsDictionary[specifier];
 
-                    tasks.Add(this.InsertRows(cn, definition, columns, list.ToArray()));
+                    tasks.Add(this.InsertRows(cn, definition, table.Columns, list.ToArray()));
                     list.Clear();
                     this.RowsChunkUnloaded?.Invoke(this, table.FullName);
                 }
@@ -131,10 +125,10 @@ namespace StarDump
                 foreach (KeyValuePair<string, List<UnloadRow>> item in rowsDictionary)
                 {
                     string specifier = item.Key;
-                    Starcounter.Metadata.RawView t = tablesDictionary[specifier];
+                    UnloadTable table = tablesDictionary[specifier];
                     ulong count = rowsCountDictionary[specifier];
 
-                    sql = this.SqlHelper.GenerateUpdateMetadataTableRowsCount(t.FullName, count);
+                    sql = this.SqlHelper.GenerateUpdateMetadataTableRowsCount(table.FullName, count);
                     this.SqlHelper.ExecuteNonQuery(sql, cn);
 
                     if (!item.Value.Any())
@@ -143,10 +137,9 @@ namespace StarDump
                     }
 
                     List<UnloadRow> list = rowsDictionary[specifier];
-                    UnloadColumn[] columns = columnsDictionary[specifier];
                     string definition = insertIntoDefinitionsDictionary[specifier];
 
-                    tasks.Add(this.InsertRows(cn, definition, columns, list.ToArray()));
+                    tasks.Add(this.InsertRows(cn, definition, table.Columns, list.ToArray()));
                 }
             });
 
@@ -181,19 +174,19 @@ namespace StarDump
             return cn;
         }
 
-        protected void CreateTableAndInsertMetadata(SqliteConnection cn, Starcounter.Metadata.RawView table, UnloadColumn[] columns)
+        protected void CreateTableAndInsertMetadata(SqliteConnection cn, UnloadTable table)
         {
             string sql = this.SqlHelper.GenerateInsertMetadataTable(table);
             this.SqlHelper.ExecuteNonQuery(sql, cn);
 
-            sql = this.SqlHelper.GenerateInsertMetadataColumns(table, columns);
+            sql = this.SqlHelper.GenerateInsertMetadataColumns(table);
             this.SqlHelper.ExecuteNonQuery(sql, cn);
 
-            sql = this.SqlHelper.GenerateCreateTable(table, columns);
+            sql = this.SqlHelper.GenerateCreateTable(table);
             this.SqlHelper.ExecuteNonQuery(sql, cn);
         }
 
-        protected Task InsertRows(SqliteConnection cn, string insertDefinition, UnloadColumn[] columns, UnloadRow[] rows)
+        protected Task InsertRows(SqliteConnection cn, string insertDefinition, List<UnloadColumn> columns, UnloadRow[] rows)
         {
             return Task.Run(() =>
             {
@@ -271,46 +264,64 @@ namespace StarDump
             return specifier.TypeId == s;
         }
 
-        protected Starcounter.Metadata.RawView[] SelectTables()
+        protected Dictionary<string, UnloadTable> SelectTables(ulong dbHandle)
         {
-            IEnumerable<Starcounter.Metadata.RawView> tables = Db.SQL<Starcounter.Metadata.RawView>("SELECT t FROM \"Starcounter.Metadata.RawView\" t");
+            IEnumerable<Starcounter.Metadata.RawView> query = Db.SQL<Starcounter.Metadata.RawView>("SELECT t FROM \"Starcounter.Metadata.RawView\" t");
             string[] prefixes = this.Configuration.SkipTablePrefixes;
+            Dictionary<string, UnloadTable> tables = new Dictionary<string, UnloadTable>();
 
-            if (prefixes.Length == 1)
+            foreach (Starcounter.Metadata.RawView t in query)
             {
-                string prefix = prefixes[0];
-                tables = tables.Where(x => !x.Name.StartsWith(prefix));
-            }
-            else if (prefixes.Any())
-            {
-                tables = tables.Where(x => !prefixes.Any(p => x.FullName.StartsWith(p)));
-            }
+                switch (prefixes.Length)
+                {
+                    case 0: break;
+                    case 1:
+                        if (t.FullName.StartsWith(prefixes[0]))
+                        {
+                            continue;
+                        }
+                        break;
+                    default:
+                        if (prefixes.Any(x => t.FullName.StartsWith(x)))
+                        {
+                            continue;
+                        }
+                        break;
+                }
 
-            return tables.ToArray();
+                string specifier = this.GetSetSpecifier(dbHandle, t);
+
+                tables.Add(specifier, new UnloadTable(specifier, t));
+            }
+            
+            this.SelectTableColumns(dbHandle, tables);
+
+            return tables;
         }
 
-        protected Dictionary<string, UnloadColumn[]> SelectTableColumns(ulong dbHandle, Dictionary<string, Starcounter.Metadata.RawView> tables)
+        protected void SelectTableColumns(ulong dbHandle, Dictionary<string, UnloadTable> tables)
         {
-            Dictionary<string, List<Starcounter.Metadata.Column>> dictionary = tables.ToDictionary(key => key.Value.FullName, value => new List<Starcounter.Metadata.Column>());
+            Dictionary<string, UnloadTable> dictionary = tables.ToDictionary(key => key.Value.FullName, val => val.Value);
             IEnumerable<Starcounter.Metadata.Column> columns = Db.SQL<Starcounter.Metadata.Column>("SELECT c FROM \"Starcounter.Metadata.Column\" c");
             string[] prefixes = this.Configuration.SkipColumnPrefixes;
 
             foreach (Starcounter.Metadata.Column col in columns)
             {
-                if (!dictionary.ContainsKey(col.Table.FullName))
+                string name = col.Table.FullName;
+
+                if (!dictionary.ContainsKey(name))
                 {
                     continue;
                 }
 
                 switch (prefixes.Length)
                 {
+                    case 0: break;
                     case 1:
                         if (col.Name.StartsWith(prefixes[0]))
                         {
                             continue;
                         }
-                        break;
-                    case 0:
                         break;
                     default:
                         if (prefixes.Any(x => col.Name.StartsWith(x)))
@@ -320,13 +331,8 @@ namespace StarDump
                         break;
                 }
 
-                string specifier = this.GetSetSpecifier(dbHandle, col.Table);
-                dictionary[specifier].Add(col);
+                dictionary[name].Columns.Add(new UnloadColumn(col));
             }
-
-            Dictionary<string, UnloadColumn[]> result = dictionary.ToDictionary(key => key.Key, val => val.Value.Select(x => new UnloadColumn(x)).ToArray());
-
-            return result;
         }
 
         protected UnloadColumn[] SelectTableColumns(string tableName)

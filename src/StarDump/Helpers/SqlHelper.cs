@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 using Starcounter;
 
@@ -17,20 +18,20 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateInsertMetadataTable(Starcounter.Metadata.RawView table)
+        public string GenerateInsertMetadataTable(UnloadTable table)
         {
             StringBuilder sql = new StringBuilder();
 
             sql.Append("INSERT INTO `Starcounter.Metadata.Table` (`Id`, `Name`, `ParentId`) VALUES (");
-            sql.Append((long)table.GetObjectNo()).Append(", '").Append(table.FullName).Append("', ");
+            sql.Append((long)table.ObjectId).Append(", '").Append(table.FullName).Append("', ");
 
-            if (table.Inherits == null)
+            if (table.RawView.Inherits == null)
             {
                 sql.Append("NULL");
             }
             else
             {
-                sql.Append((long)table.Inherits.GetObjectNo());
+                sql.Append((long)table.RawView.Inherits.GetObjectNo());
             }
 
             sql.Append(");");
@@ -48,15 +49,15 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateInsertMetadataColumns(Starcounter.Metadata.RawView table, UnloadColumn[] columns)
+        public string GenerateInsertMetadataColumns(UnloadTable table)
         {
             StringBuilder sql = new StringBuilder();
 
             sql.Append("INSERT INTO `Starcounter.Metadata.Column` (`Id`, `TableId`, `Name`, `DataType`, `ReferenceType`, `Nullable`, `Inherited`) VALUES ");
 
-            for (int i = 0; i < columns.Length; i++)
+            for (int i = 0; i < table.Columns.Count; i++)
             {
-                UnloadColumn col = columns[i];
+                UnloadColumn col = table.Columns[i];
 
                 if (i > 0)
                 {
@@ -64,7 +65,7 @@ namespace StarDump
                 }
 
                 sql.Append("(").Append((long)col.ObjectId).Append(", ")
-                    .Append((long)table.GetObjectNo()).Append(", '").Append(col.Name).Append("', '")
+                    .Append((long)table.ObjectId).Append(", '").Append(col.Name).Append("', '")
                     .Append(col.DataTypeName).Append("', ");
 
                 if (col.DataTypeName == "reference")
@@ -85,13 +86,13 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateCreateTable(Starcounter.Metadata.RawView table, UnloadColumn[] columns)
+        public string GenerateCreateTable(UnloadTable table)
         {
             StringBuilder sql = new StringBuilder();
 
             sql.Append("CREATE TABLE `").Append(table.FullName).Append("` (`ObjectNo` INTEGER NOT NULL");
 
-            foreach (var c in columns)
+            foreach (UnloadColumn c in table.Columns)
             {
                 string type = this.GetSqlType(c.DataTypeName);
 
@@ -108,17 +109,17 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateInsertIntoWithParams(string tableName, UnloadColumn[] columns)
+        public string GenerateInsertIntoWithParams(UnloadTable table)
         {
             StringBuilder sql = new StringBuilder();
             
-            this.GenerateInsertIntoDefinition(tableName, columns, sql);
+            this.GenerateInsertIntoDefinition(table, sql);
 
             sql.Append("(@ObjectNo");
 
-            for (int i = 0; i < columns.Length; i++)
+            for (int i = 0; i < table.Columns.Count; i++)
             {
-                sql.Append(", @").Append(columns[i].Name);
+                sql.Append(", @").Append(table.Columns[i].Name);
             }
 
             sql.Append(");");
@@ -126,23 +127,23 @@ namespace StarDump
             return sql.ToString();
         }
 
-        public string GenerateInsertInto(string tableName, UnloadColumn[] columns, UnloadRow row)
+        public string GenerateInsertInto(UnloadTable table, UnloadRow row)
         {
             StringBuilder sql = new StringBuilder();
 
-            this.GenerateInsertIntoDefinition(tableName, columns, sql);
-            this.GenerateInsertIntoValues(columns, row, sql);
+            this.GenerateInsertIntoDefinition(table, sql);
+            this.GenerateInsertIntoValues(table.Columns, row, sql);
             sql.Append(";");
 
             return sql.ToString();
         }
 
-        public string GenerateInsertInto(string tableName, UnloadColumn[] columns, UnloadRow[] rows)
+        public string GenerateInsertInto(UnloadTable table, UnloadRow[] rows)
         {
             StringBuilder sql = new StringBuilder();
 
-            this.GenerateInsertIntoDefinition(tableName, columns, sql);
-            this.GenerateInsertIntoValues(columns, rows, sql);
+            this.GenerateInsertIntoDefinition(table, sql);
+            this.GenerateInsertIntoValues(table.Columns, rows, sql);
             sql.Append(";");
 
             return sql.ToString();
@@ -325,7 +326,7 @@ namespace StarDump
             }
         }
 
-        public void GenerateInsertIntoValues(UnloadColumn[] columns, UnloadRow[] rows, StringBuilder sql)
+        public void GenerateInsertIntoValues(List<UnloadColumn> columns, UnloadRow[] rows, StringBuilder sql)
         {
             for (int i = 0; i < rows.Length; i++)
             {
@@ -338,7 +339,7 @@ namespace StarDump
             }
         }
 
-        public void GenerateInsertIntoValues(UnloadColumn[] columns, UnloadRow row, StringBuilder sql)
+        public void GenerateInsertIntoValues(List<UnloadColumn> columns, UnloadRow row, StringBuilder sql)
         {
             sql.Append("(").Append((long)row.DbGetIdentity());
 
@@ -368,11 +369,11 @@ namespace StarDump
             sql.Append(")");
         }
 
-        public void GenerateInsertIntoDefinition(string tableName, UnloadColumn[] columns, StringBuilder sql)
+        public void GenerateInsertIntoDefinition(UnloadTable table, StringBuilder sql)
         {
-            sql.Append("INSERT INTO `").Append(tableName).Append("` (`ObjectNo`");
+            sql.Append("INSERT INTO `").Append(table.FullName).Append("` (`ObjectNo`");
 
-            foreach (var c in columns)
+            foreach (var c in table.Columns)
             {
                 sql.Append(", `").Append(c.Name).Append("`");
             }
