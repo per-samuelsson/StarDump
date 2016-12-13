@@ -216,7 +216,7 @@ namespace StarDump
                 case "byte": return (long)((byte)value);
                 case "char": return (long)((char)value);
                 case "DateTime": return ((DateTime)value).Ticks;
-                case "decimal": return ((decimal)value).ToString();
+                case "decimal": return ((decimal)value).ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
                 case "double": return (double)value;
                 case "float": return (double)((float)value);
                 case "int": return (long)((int)value);
@@ -233,7 +233,7 @@ namespace StarDump
                 case "byte?": return (long)(value as byte?).Value;
                 case "char?": return (long)(value as char?).Value;
                 case "DateTime?": return (value as DateTime?).Value.Ticks;
-                case "decimal?": return decimal.Parse((string)value) as decimal?;
+                case "decimal?": return decimal.Parse((string)value, System.Globalization.CultureInfo.InvariantCulture.NumberFormat) as decimal?;
                 case "double?": return (value as double?).Value;
                 case "float?": return (double)(value as float?).Value;
                 case "int?": return (long)(value as int?).Value;
@@ -264,7 +264,7 @@ namespace StarDump
                 case "byte": return (byte)((long)value);
                 case "char": return (char)((long)value);
                 case "DateTime": return new DateTime((long)value);
-                case "decimal": return decimal.Parse((string)value);
+                case "decimal": return decimal.Parse((string)value, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
                 case "double": return (double)value;
                 case "float": return (float)((double)value);
                 case "int": return (int)((long)value);
@@ -280,7 +280,7 @@ namespace StarDump
                 case "byte?": return (byte)((long)value) as byte?;
                 case "char?": return (char)((long)value) as char?;
                 case "DateTime?": return new DateTime((long)value) as DateTime?;
-                case "decimal?": return decimal.Parse((string)value) as decimal?;
+                case "decimal?": return decimal.Parse((string)value, System.Globalization.CultureInfo.InvariantCulture.NumberFormat) as decimal?;
                 case "double?": return (double)value as double?;
                 case "float?": return (float)((double)value) as float?;
                 case "int?": return (int)((long)value) as int?;
@@ -356,7 +356,7 @@ namespace StarDump
                 }
                 else if (type == "TEXT")
                 {
-                    value = value.ToString().Replace("'", "''");
+                    value = this.EscapeSqliteString(value.ToString());
                     sql.Append("'").Append(value).Append("'");
                 }
                 else
@@ -378,6 +378,26 @@ namespace StarDump
             }
 
             sql.Append(") VALUES");
+        }
+
+        public string EscapeSqliteString(string value)
+        {
+            StringBuilder sb = new StringBuilder(value.Length);
+
+            foreach (char ch in value)
+            {
+                switch (ch)
+                {
+                    case '\'':
+                        sb.Append("''");
+                        break;
+                    default:
+                        sb.Append(ch);
+                        break;
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }
