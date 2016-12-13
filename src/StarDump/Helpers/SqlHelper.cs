@@ -112,7 +112,7 @@ namespace StarDump
         {
             StringBuilder sql = new StringBuilder();
             
-            this.GenerateInsertInto(tableName, columns, sql);
+            this.GenerateInsertIntoDefinition(tableName, columns, sql);
 
             sql.Append("(@ObjectNo");
 
@@ -130,8 +130,8 @@ namespace StarDump
         {
             StringBuilder sql = new StringBuilder();
 
-            this.GenerateInsertInto(tableName, columns, sql);
-            this.GenerateInsertInto(columns, row, sql);
+            this.GenerateInsertIntoDefinition(tableName, columns, sql);
+            this.GenerateInsertIntoValues(columns, row, sql);
             sql.Append(";");
 
             return sql.ToString();
@@ -141,20 +141,8 @@ namespace StarDump
         {
             StringBuilder sql = new StringBuilder();
 
-            this.GenerateInsertInto(tableName, columns, sql);
-
-            for (int i = 0; i < rows.Length; i++)
-            {
-                UnloadRow row = rows[i];
-
-                if (i > 0)
-                {
-                    sql.Append(", ");
-                }
-
-                this.GenerateInsertInto(columns, row, sql);
-            }
-
+            this.GenerateInsertIntoDefinition(tableName, columns, sql);
+            this.GenerateInsertIntoValues(columns, rows, sql);
             sql.Append(";");
 
             return sql.ToString();
@@ -337,7 +325,20 @@ namespace StarDump
             }
         }
 
-        protected void GenerateInsertInto(UnloadColumn[] columns, UnloadRow row, StringBuilder sql)
+        public void GenerateInsertIntoValues(UnloadColumn[] columns, UnloadRow[] rows, StringBuilder sql)
+        {
+            for (int i = 0; i < rows.Length; i++)
+            {
+                if (i > 0)
+                {
+                    sql.Append(", ");
+                }
+
+                this.GenerateInsertIntoValues(columns, rows[i], sql);
+            }
+        }
+
+        public void GenerateInsertIntoValues(UnloadColumn[] columns, UnloadRow row, StringBuilder sql)
         {
             sql.Append("(").Append((long)row.DbGetIdentity());
 
@@ -364,10 +365,10 @@ namespace StarDump
                 }
             }
         
-            sql.Append(") ");
+            sql.Append(")");
         }
 
-        protected void GenerateInsertInto(string tableName, UnloadColumn[] columns, StringBuilder sql)
+        public void GenerateInsertIntoDefinition(string tableName, UnloadColumn[] columns, StringBuilder sql)
         {
             sql.Append("INSERT INTO `").Append(tableName).Append("` (`ObjectNo`");
 
