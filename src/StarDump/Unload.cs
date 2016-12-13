@@ -62,10 +62,13 @@ namespace StarDump
                 Dictionary<string, UnloadColumn[]> columnsDictionary = new Dictionary<string, UnloadColumn[]>();
                 Dictionary<string, List<UnloadRow>> rowsDictionary = new Dictionary<string, List<UnloadRow>>();
                 Dictionary<string, ulong> rowsCountDictionary = new Dictionary<string, ulong>();
+                Dictionary<string, string> insertIntoDefinitionsDictionary = new Dictionary<string, string>();
+                Dictionary<string, CrudHelper> crudHelpersDictionary = new Dictionary<string, CrudHelper>();
 
                 foreach (Starcounter.Metadata.RawView t in tables)
                 {
                     string specifier = this.GetSetSpecifier(dbHandle, t);
+                    string tableName = t.FullName;
                     UnloadColumn[] columns = this.SelectTableColumns(t.FullName);
 
                     tablesDictionary.Add(specifier, t);
@@ -73,9 +76,21 @@ namespace StarDump
                     rowsDictionary.Add(specifier, new List<UnloadRow>());
                     rowsCountDictionary.Add(specifier, 0);
 
-                    this.CreateTableAndInsertMetadata(cn, t, columns);
-                }
+                    insertIntoDefinitionsDictionary.Add(specifier, null);
+                    crudHelpersDictionary.Add(specifier, new CrudHelper(dbHandle, tableName, columns));
 
+                    this.CreateTableAndInsertMetadata(cn, t, columns);
+
+                    tasks.Add(Task.Run(() =>
+                    {
+                        StringBuilder definition = new StringBuilder();
+                        this.SqlHelper.GenerateInsertIntoDefinition(tableName, columns, definition);
+                        insertIntoDefinitionsDictionary[specifier] = definition.ToString();
+                    }));
+                }
+                
+                Task.WaitAll(tasks.ToArray());
+                tasks.Clear();
                 this.SqlHelper.ExecuteNonQuery("BEGIN TRANSACTION", cn);
 
                 string query = "SELECT m FROM Starcounter.Internal.Metadata.MotherOfAllLayouts m";
@@ -96,7 +111,7 @@ namespace StarDump
                     Starcounter.Metadata.RawView table = tablesDictionary[specifier];
                     UnloadColumn[] columns = columnsDictionary[specifier];
 
-                    r.Fill(table.FullName, columns);
+                    r.Fill(crudHelpersDictionary[specifier], table.FullName, columns);
                     list.Add(r);
                     rowsCount++;
                     rowsCountDictionary[specifier]++;
@@ -106,7 +121,9 @@ namespace StarDump
                         continue;
                     }
 
-                    tasks.Add(this.InsertRows(cn, table.FullName, columns, list.ToArray()));
+                    string definition = insertIntoDefinitionsDictionary[specifier];
+
+                    tasks.Add(this.InsertRows(cn, definition, columns, list.ToArray()));
                     list.Clear();
                     this.RowsChunkUnloaded?.Invoke(this, table.FullName);
                 }
@@ -127,8 +144,9 @@ namespace StarDump
 
                     List<UnloadRow> list = rowsDictionary[specifier];
                     UnloadColumn[] columns = columnsDictionary[specifier];
+                    string definition = insertIntoDefinitionsDictionary[specifier];
 
-                    tasks.Add(this.InsertRows(cn, t.FullName, columns, list.ToArray()));
+                    tasks.Add(this.InsertRows(cn, definition, columns, list.ToArray()));
                 }
             });
 
@@ -175,12 +193,17 @@ namespace StarDump
             this.SqlHelper.ExecuteNonQuery(sql, cn);
         }
 
-        protected Task InsertRows(SqliteConnection cn, string tableName, UnloadColumn[] columns, UnloadRow[] rows)
+        protected Task InsertRows(SqliteConnection cn, string insertDefinition, UnloadColumn[] columns, UnloadRow[] rows)
         {
             return Task.Run(() =>
             {
-                string sql = this.SqlHelper.GenerateInsertInto(tableName, columns, rows);
-                this.SqlHelper.ExecuteNonQuery(sql, cn);
+                StringBuilder sql = new StringBuilder();
+
+                sql.Append(insertDefinition);
+                this.SqlHelper.GenerateInsertIntoValues(columns, rows, sql);
+
+                // string sql = this.SqlHelper.GenerateInsertInto(tableName, columns, rows);
+                this.SqlHelper.ExecuteNonQuery(sql.ToString(), cn);
             });
         }
 

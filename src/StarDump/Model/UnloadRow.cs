@@ -25,7 +25,7 @@ namespace StarDump
             this[DbRefKey] = dbRef;
         }
 
-        public void Fill(string tableName, UnloadColumn[] columns)
+        public void Fill(CrudHelper helper, string tableName, UnloadColumn[] columns)
         {
             ulong dbId = this.DbGetIdentity();
             ulong dbRef = this.DbGetReference();
@@ -33,11 +33,8 @@ namespace StarDump
 
             foreach (var c in columns)
             {
-                ulong getter;
-                object value;
-                
-                sccrud.star_crud_GetPropertyReadHandle(dbHandle, tableName, c.Name, out getter);
-                value = this.GetValue(dbId, dbRef, getter, c.DataTypeName, c.Nullable);
+                ulong getter = helper.GetGetter(c.Name);
+                object value = this.GetValue(dbId, dbRef, getter, c.DataTypeName, c.Nullable);
                 
                 this[c.Name] = value;
             }
