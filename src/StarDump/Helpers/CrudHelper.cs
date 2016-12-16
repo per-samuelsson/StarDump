@@ -10,7 +10,9 @@ namespace StarDump
     {
         public string TableName { get; protected set; }
         protected Dictionary<string, ulong> getters = new Dictionary<string, ulong>();
-        protected Dictionary<string, Func<ulong, ulong, ulong, object>> methods = new Dictionary<string, Func<ulong, ulong, ulong, object>>();
+        protected Dictionary<string, ulong> setters = new Dictionary<string, ulong>();
+        protected Dictionary<string, Func<ulong, ulong, ulong, object>> getMethods = new Dictionary<string, Func<ulong, ulong, ulong, object>>();
+        protected Dictionary<string, Action<ulong, ulong, ulong, object>> setMethods = new Dictionary<string, Action<ulong, ulong, ulong, object>>();
 
         public CrudHelper(ulong dbHandle, UnloadTable table)
         {
@@ -22,7 +24,21 @@ namespace StarDump
 
                 sccrud.star_crud_GetPropertyReadHandle(dbHandle, this.TableName, c.Name, out getter);
                 getters.Add(c.Name, getter);
-                methods.Add(c.Name, this.GetMethod(c.DataTypeName, c.Nullable));
+                getMethods.Add(c.Name, this.GetMethod(c.DataTypeName, c.Nullable));
+            }
+        }
+
+        public CrudHelper(ulong dbHandle, ReloadTable table)
+        {
+            this.TableName = table.Name;
+
+            foreach (ReloadColumn c in table.Columns)
+            {
+                ulong setter;
+
+                Db.MetalayerCheck(Starcounter.Database.Interop.sccrud.star_crud_GetPropertyWriteHandle(dbHandle, this.TableName, c.Name, out setter));
+                setters.Add(c.Name, setter);
+                setMethods.Add(c.Name, this.SetMethod(c.DataType, c.Nullable));
             }
         }
 
@@ -31,13 +47,82 @@ namespace StarDump
             return getters[columnName];
         }
 
+        public ulong GetSetter(string columnName)
+        {
+            return setters[columnName];
+        }
+
         public object GetValue(ulong dbId, ulong dbRef, string columnName)
         {
             ulong getter = getters[columnName];
-            Func<ulong, ulong, ulong, object> method = this.methods[columnName];
+            Func<ulong, ulong, ulong, object> method = this.getMethods[columnName];
             object value = method(dbId, dbRef, getter);
 
             return value;
+        }
+
+        public void SetValue(ulong dbId, ulong dbRef, string columnName, object value)
+        {
+            ulong setter = setters[columnName];
+            Action<ulong, ulong, ulong, object> method = this.setMethods[columnName];
+            method(dbId, dbRef, setter, value);
+        }
+
+        protected Action<ulong, ulong, ulong, object> SetMethod(string dataTypeName, bool nullable)
+        {
+            if (nullable)
+            {
+                switch (dataTypeName)
+                {
+                    case "string": return (dbId, dbRef, setter, value) => DbCrud.SetString(dbId, dbRef, setter, value as string);
+                    case "bool": return (dbId, dbRef, setter, value) => DbCrud.SetNullableBool(dbId, dbRef, setter, value as bool?);
+                    case "byte": return (dbId, dbRef, setter, value) => DbCrud.SetNullableByte(dbId, dbRef, setter, value as byte?);
+                    case "char": return (dbId, dbRef, setter, value) => DbCrud.SetNullableChar(dbId, dbRef, setter, value as char?);
+                    case "DateTime": return (dbId, dbRef, setter, value) => DbCrud.SetNullableDateTime(dbId, dbRef, setter, value as DateTime?);
+                    case "decimal": return (dbId, dbRef, setter, value) => DbCrud.SetNullableDecimal(dbId, dbRef, setter, value as decimal?);
+                    case "double": return (dbId, dbRef, setter, value) => DbCrud.SetNullableDouble(dbId, dbRef, setter, value as double?);
+                    case "float": return (dbId, dbRef, setter, value) => DbCrud.SetNullableFloat(dbId, dbRef, setter, value as float?);
+                    case "int": return (dbId, dbRef, setter, value) => DbCrud.SetNullableInt(dbId, dbRef, setter, value as int?);
+                    case "long": return (dbId, dbRef, setter, value) => DbCrud.SetNullableLong(dbId, dbRef, setter, value as long?);
+                    case "sbyte": return (dbId, dbRef, setter, value) => DbCrud.SetNullableSByte(dbId, dbRef, setter, value as sbyte?);
+                    case "short": return (dbId, dbRef, setter, value) => DbCrud.SetNullableShort(dbId, dbRef, setter, value as short?);
+                    case "uint": return (dbId, dbRef, setter, value) => DbCrud.SetNullableUInt(dbId, dbRef, setter, value as uint?);
+                    case "reference": return (dbId, dbRef, setter, value) => 
+                    {
+                        ulong? parentDbId = value as ulong?;
+                        DbCrud.SetDb(dbId, dbRef, setter, parentDbId);
+                    };
+                    case "ulong": return (dbId, dbRef, setter, value) => DbCrud.SetNullableULong(dbId, dbRef, setter, value as ulong?);
+                    case "ushort": return (dbId, dbRef, setter, value) => DbCrud.SetNullableUShort(dbId, dbRef, setter, value as ushort?);
+                    default: throw new NotImplementedException("The data type [" + dataTypeName + "] is not supported.");
+                }
+            }
+
+            switch (dataTypeName)
+            {
+                case "bool": return (dbId, dbRef, setter, value) => DbCrud.SetBool(dbId, dbRef, setter, (bool)value); break;
+                case "byte": return (dbId, dbRef, setter, value) => DbCrud.SetByte(dbId, dbRef, setter, (byte)value); break;
+                case "char": return (dbId, dbRef, setter, value) => DbCrud.SetChar(dbId, dbRef, setter, (char)value); break;
+                case "DateTime": return (dbId, dbRef, setter, value) => DbCrud.SetDateTime(dbId, dbRef, setter, (DateTime)value); break;
+                case "decimal": return (dbId, dbRef, setter, value) => DbCrud.SetDecimal(dbId, dbRef, setter, (decimal)value); break;
+                case "double": return (dbId, dbRef, setter, value) => DbCrud.SetDouble(dbId, dbRef, setter, (double)value); break;
+                case "float": return (dbId, dbRef, setter, value) => DbCrud.SetFloat(dbId, dbRef, setter, (float)value); break;
+                case "int": return (dbId, dbRef, setter, value) => DbCrud.SetInt(dbId, dbRef, setter, (int)value); break;
+                case "long": return (dbId, dbRef, setter, value) => DbCrud.SetLong(dbId, dbRef, setter, (long)value); break;
+                case "sbyte": return (dbId, dbRef, setter, value) => DbCrud.SetSByte(dbId, dbRef, setter, (sbyte)value); break;
+                case "short": return (dbId, dbRef, setter, value) => DbCrud.SetShort(dbId, dbRef, setter, (short)value); break;
+                case "string": return (dbId, dbRef, setter, value) => DbCrud.SetString(dbId, dbRef, setter, (string)value); break;
+                case "uint": return (dbId, dbRef, setter, value) => DbCrud.SetUInt(dbId, dbRef, setter, (uint)value); break;
+                case "ulong": return (dbId, dbRef, setter, value) => DbCrud.SetULong(dbId, dbRef, setter, (ulong)value); break;
+                case "ushort": return (dbId, dbRef, setter, value) => DbCrud.SetUShort(dbId, dbRef, setter, (ushort)value); break;
+                case "byte[]": return (dbId, dbRef, setter, value) => DbCrud.SetBinary(dbId, dbRef, setter, (byte[])value); break;
+                case "reference": return (dbId, dbRef, setter, value) =>
+                {
+                    ulong? parentDbId = value as ulong?;
+                    DbCrud.SetDb(dbId, dbRef, setter, parentDbId);
+                };
+                default: throw new NotImplementedException("The data type [" + dataTypeName + "] is not supported.");
+            }
         }
 
         protected Func<ulong, ulong, ulong, object> GetMethod(string dataTypeName, bool nullable)

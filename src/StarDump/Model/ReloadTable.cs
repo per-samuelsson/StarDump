@@ -16,6 +16,7 @@ namespace StarDump
         public ulong RowsCount { get; set; }
         public List<ReloadColumn> Columns { get; set; }
         public List<ReloadTable> Children { get; set; }
+        public CrudHelper CrudHelper { get; set; }
 
         public ReloadTable()
         {

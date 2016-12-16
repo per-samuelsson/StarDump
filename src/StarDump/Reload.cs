@@ -139,7 +139,7 @@ namespace StarDump
                 ReloadTable parent = tables.FirstOrDefault(x => x.Id == table.ParentId);
                 ulong tableRowsCount;
 
-                this.InsertTableData(cn, table, table.Columns, out tableRowsCount);
+                this.InsertTableData(cn, table, out tableRowsCount);
                 table.RowsCount = tableRowsCount;
 
                 List<Task> tasks = new List<Task>();
@@ -157,7 +157,10 @@ namespace StarDump
         {
             Db.Transact(() => 
             {
+                ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
+                
                 this.CreateTable(table, table.Columns);
+                table.CrudHelper = new CrudHelper(dbHandle, table);
             });
         }
 
@@ -173,13 +176,15 @@ namespace StarDump
             Starcounter.Db.MetalayerCheck(scdbmetalayer.star_create_table_by_names(dbHandle, table.Name, parentName, bluestarColumns.ToArray(), out layout));
         }
 
-        protected void InsertTableData(SqliteConnection cn, ReloadTable table, List<ReloadColumn> columns, out ulong rowsCount)
+        protected void InsertTableData(SqliteConnection cn, ReloadTable table, out ulong rowsCount)
         {
             this.ReloadTableStart?.Invoke(this, table.Name);
 
-            string sql = this.SqlHelper.GenerateSelectFrom(table.Name, columns.Select(x => x.Name).ToArray());
+            string sql = this.SqlHelper.GenerateSelectFrom(table.Name, table.Columns.Select(x => x.Name).ToArray());
             SqliteCommand cmd = new SqliteCommand(sql, cn);
             SqliteDataReader reader = cmd.ExecuteReader();
+            List<Task> tasks = new List<Task>();
+            List<UnloadRow> temp = new List<UnloadRow>();
             rowsCount = 0;
 
             while (reader.Read())
@@ -187,23 +192,54 @@ namespace StarDump
                 long id = reader.GetInt64(0);
                 UnloadRow row = new UnloadRow((ulong)id, 0);
 
-                for (int i = 0; i < columns.Count; i++)
+                for (int i = 0; i < table.Columns.Count; i++)
                 {
-                    ReloadColumn c = columns[i];
+                    ReloadColumn c = table.Columns[i];
                     object value = reader.GetValue(i + 1);
 
                     row[c.Name] = this.SqlHelper.ConvertFromSqliteToStarcounter(c.DataType, value);
                 }
 
-                Db.Transact(() =>
-                {
-                    row.Insert(table.Name, columns.ToArray());
-                });
-
+                temp.Add(row);
                 rowsCount++;
+
+                if (temp.Count < this.Configuration.InsertRowsBufferSize)
+                {
+                    continue;
+                }
+
+                UnloadRow[] rows = temp.ToArray();
+                temp = new List<UnloadRow>();
+
+                tasks.Add(Task.Run(() =>
+                {
+                    Db.Transact(() =>
+                    {
+                        foreach (UnloadRow r in rows)
+                        {
+                            r.Insert(table);
+                        }
+                    });
+                }));
             }
 
             reader.Dispose();
+
+            if (temp.Any())
+            {
+                tasks.Add(Task.Run(() =>
+                {
+                    Db.Transact(() =>
+                    {
+                        foreach (UnloadRow r in temp)
+                        {
+                            r.Insert(table);
+                        }
+                    });
+                }));
+            }
+
+            Task.WaitAll(tasks.ToArray());
 
             this.ReloadTableFinish?.Invoke(this, table.Name);
         }
