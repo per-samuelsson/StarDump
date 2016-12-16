@@ -165,6 +165,16 @@ namespace StarDump
             return sql.ToString();
         }
 
+        public string GenerateSelectTables()
+        {
+            return "SELECT `Id`, `Name`, `ParentId` FROM `Starcounter.Metadata.Table`";
+        }
+
+        public string GenerateSelectMetadataColumns()
+        {
+            return "SELECT `Id`, `TableId`, `Name`, `DataType`, `ReferenceType`, `Nullable`, `Inherited` FROM `Starcounter.Metadata.Column`";
+        }
+
         public string GenerateSelectMetadataColumns(long tableId)
         {
             return "SELECT `Id`, `TableId`, `Name`, `DataType`, `ReferenceType`, `Nullable`, `Inherited` FROM `Starcounter.Metadata.Column` WHERE `TableId` = " + tableId;
