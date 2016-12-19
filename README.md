@@ -11,7 +11,7 @@
 Example
 
 ```
-StarDump.exe unload --database default --dump C:\Temp\default.sqlite3
+>StarDump.exe unload --database default --dump C:\Temp\default.sqlite3
 ```
 
 **Reload database**
@@ -27,6 +27,11 @@ Example
 ```
 
 **Note:** the database should be dropped and created prior to reload.
+
+```
+>staradmin -d=default delete --force db
+>staradmin -d=default new db DefaultUserHttpPort=8080
+```
 
 ## Requires Starcounter.Core
 
