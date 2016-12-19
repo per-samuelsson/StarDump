@@ -10,3 +10,11 @@ Clone it into the same parent directory to get it work.
 |-Starcounter.Core
 |-StarDump  
 ```
+
+## Supported systems
+
+- `win10-x64`
+- `osx.10.10-x64`
+- `ubuntu.14.04-x64`
+
+[.NET Core Runtime IDentifier (RID) catalog](https://docs.microsoft.com/en-us/dotnet/articles/core/rid-catalog).
