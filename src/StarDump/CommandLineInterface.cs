@@ -16,7 +16,7 @@ namespace StarDump
 
         public CommandLineInterface()
         {
-            commandLineApplication = new CommandLineApplication(throwOnUnexpectedArg: false);
+            commandLineApplication = new CommandLineApplication();
             AddUnloadCommand();
             AddReloadCommand();
             AddBaseOptionsAndArguments();
@@ -51,9 +51,9 @@ namespace StarDump
               (target) =>
               {
                   target.Description = "Unload database";
-                  optionDatabase = target.Option("-d | --database <databasename>", "Name of starcounter database to dump", CommandOptionType.SingleValue);
-                  optionDump = target.Option("--dump <filename>", "Output dump filename", CommandOptionType.SingleValue);
-                  optionBufferSize = target.Option("--buffersize <buffersize>", "Set insert rows buffer size to dump database.", CommandOptionType.SingleValue);
+                  optionDatabase = target.Option("-db | --database <databasename>", "Name of starcounter database to dump", CommandOptionType.SingleValue);
+                  optionDump = target.Option("-d | --dump <filename>", "Output dump filename", CommandOptionType.SingleValue);
+                  optionBufferSize = target.Option("-b | --buffersize <buffersize>", "Set insert rows buffer size to dump database.", CommandOptionType.SingleValue);
 
                   target.HelpOption(HELP_TEMPLATE);
 
@@ -123,8 +123,8 @@ namespace StarDump
               (target) =>
               {
                   target.Description = "Reload database";
-                  optionDatabase = target.Option("--database <databasename>", "Name of starcounter database to dump", CommandOptionType.SingleValue);
-                  optionDump = target.Option("--dump <fullfilename>", "Output dump filename", CommandOptionType.SingleValue);
+                  optionDatabase = target.Option("-db | --database <databasename>", "Name of starcounter database to dump", CommandOptionType.SingleValue);
+                  optionDump = target.Option("-d | --dump <fullfilename>", "Output dump filename", CommandOptionType.SingleValue);
                   target.HelpOption(HELP_TEMPLATE);
 
                   target.OnExecute(() =>
