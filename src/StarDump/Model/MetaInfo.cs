@@ -80,5 +80,29 @@ namespace StarDump
                 return new MetaInfo(MetaInfoType.FormatVersion, "Unload format version");
             }
         }
+
+        public static MetaInfo DatabaseName
+        {
+            get
+            {
+                return new MetaInfo(MetaInfoType.DatabaseName, "Database name");
+            }
+        }
+
+        public static MetaInfo SkipTablePrefixes
+        {
+            get
+            {
+                return new MetaInfo(MetaInfoType.SkipTablePrefixes, "Skip table prefixes");
+            }
+        }
+
+        public static MetaInfo SkipColumnPrefixes
+        {
+            get
+            {
+                return new MetaInfo(MetaInfoType.SkipColumnPrefixes, "Skip column prefixes");
+            }
+        }
     }
 }
