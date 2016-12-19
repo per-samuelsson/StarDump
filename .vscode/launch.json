@@ -13,6 +13,17 @@
             "externalConsole": false
         },
         {
+            "name": "Start StarDump.Core (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-star-dump-core",
+            "program": "${workspaceRoot}/src/StarDump.Core/bin/Debug/netcoreapp1.0/win10-x64/StarDump.Core.dll",
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "stopAtEntry": false,
+            "externalConsole": false
+        },
+        {
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach",
