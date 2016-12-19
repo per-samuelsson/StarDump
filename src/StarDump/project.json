@@ -12,7 +12,6 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "type": "platform",
           "version": "1.1.0"
         }
       },
@@ -20,5 +19,11 @@
         "dnxcore50"
       ]
     }
-  }
+  },
+  // https://docs.microsoft.com/en-us/dotnet/articles/core/rid-catalog
+  "runtimes": {
+     "win10-x64": {},
+     "osx.10.10-x64": {},
+     "ubuntu.14.04-x64": {}
+   }
 }
