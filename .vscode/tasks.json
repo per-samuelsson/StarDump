@@ -16,8 +16,8 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "taskName": "build-star-dump-console",
-            "args": [ "dotnet", "build", "src/StarDump.Console" ],
+            "taskName": "build-star-dump-core",
+            "args": [ "dotnet", "build", "src/StarDump.Core" ],
             "isBuildCommand": true,
             "showOutput": "silent",
             "problemMatcher": "$msCompile"
