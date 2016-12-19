@@ -376,6 +376,18 @@ namespace StarDump
             info.Value = Assembly.FormatVersion;
             infos.Add(info);
 
+            info = MetaInfo.DatabaseName;
+            info.Value = this.Configuration.DatabaseName;
+            infos.Add(info);
+
+            info = MetaInfo.SkipTablePrefixes;
+            info.Value = string.Join(", ", this.Configuration.SkipTablePrefixes);
+            infos.Add(info);
+
+            info = MetaInfo.SkipColumnPrefixes;
+            info.Value = string.Join(", ", this.Configuration.SkipColumnPrefixes);
+            infos.Add(info);
+
             string sql = this.SqlHelper.GenerateInsertMetaInfo(infos);
             this.SqlHelper.ExecuteNonQuery(sql, cn);
         }
