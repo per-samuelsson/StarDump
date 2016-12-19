@@ -1,5 +1,33 @@
 # StarDump
 
+## Usage
+
+**Unload database**
+
+```
+>StarDump.exe unload --database [DatabaseName] --dump [FilePath]
+```
+
+Example
+
+```
+StarDump.exe unload --database default --dump C:\Temp\default.sqlite3
+```
+
+**Reload database**
+
+```
+>StarDump.exe reload --database [DatabaseName] --dump [FilePath]
+```
+
+Example
+
+```
+>StarDump.exe reload --database default --dump C:\Temp\default.sqlite3
+```
+
+**Note:** the database should be dropped and created prior to reload.
+
 ## Requires Starcounter.Core
 
 The [Starcounter.Core](https://github.com/Starcounter/Starcounter.Core/) solution is required to run this project.
