@@ -1,6 +1,6 @@
 using System;
 
-namespace StarDump
+namespace StarDump.Core
 {
     public class ReloadColumn
     {

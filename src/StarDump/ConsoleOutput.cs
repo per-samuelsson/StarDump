@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StarDump.Console
+namespace StarDump
 {
-    public class ConsoleOutput : StarDump.Output
+    public class ConsoleOutput : StarDump.Core.Output
     {
         public override void WriteErrorLine(string message = null)
         {

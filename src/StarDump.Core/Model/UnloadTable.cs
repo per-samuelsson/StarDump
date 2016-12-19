@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Starcounter;
 
-namespace StarDump
+namespace StarDump.Core
 {
     public class UnloadTable
     {

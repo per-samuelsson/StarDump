@@ -8,7 +8,7 @@ using System.IO;
 using System.Diagnostics;
 using Starcounter;
 
-namespace StarDump
+namespace StarDump.Core
 {
     public class Unload
     {

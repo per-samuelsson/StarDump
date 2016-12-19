@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace StarDump
+namespace StarDump.Core
 {
     public class Configuration
     {

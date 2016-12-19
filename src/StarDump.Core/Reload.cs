@@ -8,7 +8,7 @@ using Microsoft.Data.Sqlite;
 using Starcounter;
 using Starcounter.Database.Interop;
 
-namespace StarDump
+namespace StarDump.Core
 {
     using BluestarColumn = Starcounter.Database.Interop.scdbmetalayer.STAR_COLUMN_DEFINITION_NAMES;
 

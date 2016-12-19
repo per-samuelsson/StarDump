@@ -1,4 +1,4 @@
-namespace StarDump
+namespace StarDump.Core
 {
     public static class Assembly
     {

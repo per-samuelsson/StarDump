@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace StarDump
+namespace StarDump.Core
 {
     public class ReloadTable
     {

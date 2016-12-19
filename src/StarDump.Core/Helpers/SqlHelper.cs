@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 using Starcounter;
 
-namespace StarDump
+namespace StarDump.Core
 {
     public class SqlHelper
     {

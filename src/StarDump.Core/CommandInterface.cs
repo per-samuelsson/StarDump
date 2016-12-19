@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StarDump
+namespace StarDump.Core
 {
     public class CommandInterface
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using Starcounter;
 using Starcounter.Database.Interop;
 
-namespace StarDump
+namespace StarDump.Core
 {
     public class CrudHelper
     {

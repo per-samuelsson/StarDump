@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Starcounter;
 using Starcounter.Configuration;
 
-namespace StarDump
+namespace StarDump.Core
 {
     public class StarcounterConfiguration
     {

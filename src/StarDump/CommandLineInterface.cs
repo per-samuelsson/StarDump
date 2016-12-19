@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using System.IO;
 
-namespace StarDump.Console
+namespace StarDump
 {
     public class CommandLineInterface
     {
@@ -54,7 +54,7 @@ namespace StarDump.Console
 
                   target.OnExecute(() =>
                   {
-                      StarDump.Configuration starDumpConfiguration = new StarDump.Configuration();
+                      StarDump.Core.Configuration starDumpConfiguration = new StarDump.Core.Configuration();
 
                       // Database Option
                       if (optionDatabase.HasValue())
@@ -96,7 +96,7 @@ namespace StarDump.Console
                       // Execute Unload
                       try
                       {
-                          bool execution = StarDump.CommandInterface.Unload(starDumpConfiguration);
+                          bool execution = StarDump.Core.CommandInterface.Unload(starDumpConfiguration);
                           return execution ? 0 : -1;
                       }
                       catch (Exception e)
@@ -124,7 +124,7 @@ namespace StarDump.Console
 
                   target.OnExecute(() =>
                   {
-                      StarDump.Configuration starDumpConfiguration = new StarDump.Configuration();
+                      StarDump.Core.Configuration starDumpConfiguration = new StarDump.Core.Configuration();
 
                       // Database Option
                       if (!optionDatabase.HasValue())
@@ -148,7 +148,7 @@ namespace StarDump.Console
                       // Execute Reload
                       try
                       {
-                          bool execution = StarDump.CommandInterface.Reload(starDumpConfiguration);
+                          bool execution = StarDump.Core.CommandInterface.Reload(starDumpConfiguration);
                           return execution ? 0 : -1;
                       }
                       catch (Exception e)
