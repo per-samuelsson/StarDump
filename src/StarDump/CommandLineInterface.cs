@@ -26,6 +26,11 @@ namespace StarDump
         {
             try
             {
+                if (args.Length == 0)
+                {
+                    commandLineApplication.ShowHelp();
+                    return 0;
+                }
                 return commandLineApplication.Execute(args);
             }
             catch(Exception e)
