@@ -12,8 +12,9 @@ namespace StarDump
         {
             StringBuilder sql = new StringBuilder();
 
-            sql.Append("CREATE TABLE `Starcounter.Metadata.Table` (`Id` INTEGER NOT NULL, `Name` TEXT NOT NULL, `ParentId` INTEGER, `RowsCount` INTEGER, PRIMARY KEY(`Id`));");
-            sql.Append("CREATE TABLE `Starcounter.Metadata.Column` (`Id` INTEGER NOT NULL, `TableId` INTEGER NOT NULL, `Name` TEXT NOT NULL, `DataType` TEXT NOT NULL, `ReferenceType` TEXT NULL, `Nullable` INTEGER NOT NULL, `Inherited` INTEGER NOT NULL, PRIMARY KEY(`Id`));");
+            sql.Append("CREATE TABLE `Starcounter.Metadata.Table` (`Id` INTEGER NOT NULL, `Name` TEXT NOT NULL, `ParentId` INTEGER, `RowsCount` INTEGER, PRIMARY KEY(`Id`)); ");
+            sql.Append("CREATE TABLE `Starcounter.Metadata.Column` (`Id` INTEGER NOT NULL, `TableId` INTEGER NOT NULL, `Name` TEXT NOT NULL, `DataType` TEXT NOT NULL, `ReferenceType` TEXT NULL, `Nullable` INTEGER NOT NULL, `Inherited` INTEGER NOT NULL, PRIMARY KEY(`Id`)); ");
+            sql.Append("CREATE TABLE `Starcounter.Metadata.Info` (`Id` INTEGER NOT NULL, `Name` TEXT NOT NULL, `Value` TEXT, PRIMARY KEY(`Id`)); ");
 
             return sql.ToString();
         }
@@ -79,6 +80,32 @@ namespace StarDump
                 }
 
                 sql.Append(", ").Append(col.Nullable ? 1 : 0).Append(", ").Append(col.Inherited ? 1 : 0).Append(")");
+            }
+
+            sql.Append(";");
+
+            return sql.ToString();
+        }
+
+        public string GenerateInsertMetaInfo(List<MetaInfo> infos)
+        {
+            bool first = true;
+            StringBuilder sql = new StringBuilder();
+
+            sql.Append("INSERT INTO `Starcounter.Metadata.Info` (`Id`, `Name`, `Value`) VALUES ");
+
+            foreach (MetaInfo info in infos)
+            {
+                if (!first)
+                {
+                    sql.Append(", ");
+                }
+                else
+                {
+                    first = false;
+                }
+
+                sql.Append("(").Append(info.Id).Append(", '").Append(this.EscapeSqliteString(info.Name)).Append("', '").Append(this.EscapeSqliteString(info.Value)).Append("')");
             }
 
             sql.Append(";");

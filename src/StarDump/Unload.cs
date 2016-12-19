@@ -130,6 +130,7 @@ namespace StarDump
             Task.WaitAll(tasks.ToArray());
             this.SqlHelper.ExecuteNonQuery("COMMIT TRANSACTION", cn);
 
+            this.InsertMetaInfo(cn, DateTime.Now - watch.Elapsed, DateTime.Now, tablesCount, rowsCount);
             cn.Close();
             host.Dispose();
             watch.Stop();
@@ -339,6 +340,44 @@ namespace StarDump
             }
 
             return columns.Select(x => new UnloadColumn(x)).ToArray();
+        }
+
+        protected void InsertMetaInfo(SqliteConnection cn, DateTime unloadStart, DateTime unloadFinish, int tablesCount, ulong rowsCount)
+        {
+            MetaInfo info;
+            List<MetaInfo> infos = new List<MetaInfo>();
+            StarcounterConfiguration config = StarcounterConfiguration.GetCurrentConfiguration();
+
+            info = MetaInfo.UnloadStart;
+            info.Value = unloadStart.ToString("yyyy-MM-dd HH:mm:ss.fff \"GMT\"zzz");
+            infos.Add(info);
+
+            info = MetaInfo.UnloadFinish;
+            info.Value = unloadFinish.ToString("yyyy-MM-dd HH:mm:ss.fff \"GMT\"zzz");
+            infos.Add(info);
+
+            info = MetaInfo.TablesCount;
+            info.Value = tablesCount.ToString();
+            infos.Add(info);
+
+            info = MetaInfo.RowsCount;
+            info.Value = rowsCount.ToString();
+            infos.Add(info);
+
+            info = MetaInfo.StarcounterVersion;
+            info.Value = config.Version;
+            infos.Add(info);
+
+            info = MetaInfo.StarDumpVersion;
+            info.Value = Assembly.Version;
+            infos.Add(info);
+
+            info = MetaInfo.FormatVersion;
+            info.Value = Assembly.FormatVersion;
+            infos.Add(info);
+
+            string sql = this.SqlHelper.GenerateInsertMetaInfo(infos);
+            this.SqlHelper.ExecuteNonQuery(sql, cn);
         }
     }
 }
