@@ -20,6 +20,13 @@ namespace StarDump.Console
             System.Console.ResetColor();
         }
 
+        public void WriteErrorLine(Exception e)
+        {
+            System.Console.ForegroundColor = ConsoleColor.Red;
+            System.Console.WriteLine(e);
+            System.Console.ResetColor();
+        }
+
         public override void WriteErrorLine(List<string> messages)
         {
             foreach (string message in messages)
