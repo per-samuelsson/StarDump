@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
 using Starcounter.Database.Interop;
+using StarDump.Common;
 
 namespace StarDump.Core
 {
@@ -100,22 +101,22 @@ namespace StarDump.Core
 
             switch (dataTypeName)
             {
-                case "bool": return (dbId, dbRef, setter, value) => DbCrud.SetBool(dbId, dbRef, setter, (bool)value); break;
-                case "byte": return (dbId, dbRef, setter, value) => DbCrud.SetByte(dbId, dbRef, setter, (byte)value); break;
-                case "char": return (dbId, dbRef, setter, value) => DbCrud.SetChar(dbId, dbRef, setter, (char)value); break;
-                case "DateTime": return (dbId, dbRef, setter, value) => DbCrud.SetDateTime(dbId, dbRef, setter, (DateTime)value); break;
-                case "decimal": return (dbId, dbRef, setter, value) => DbCrud.SetDecimal(dbId, dbRef, setter, (decimal)value); break;
-                case "double": return (dbId, dbRef, setter, value) => DbCrud.SetDouble(dbId, dbRef, setter, (double)value); break;
-                case "float": return (dbId, dbRef, setter, value) => DbCrud.SetFloat(dbId, dbRef, setter, (float)value); break;
-                case "int": return (dbId, dbRef, setter, value) => DbCrud.SetInt(dbId, dbRef, setter, (int)value); break;
-                case "long": return (dbId, dbRef, setter, value) => DbCrud.SetLong(dbId, dbRef, setter, (long)value); break;
-                case "sbyte": return (dbId, dbRef, setter, value) => DbCrud.SetSByte(dbId, dbRef, setter, (sbyte)value); break;
-                case "short": return (dbId, dbRef, setter, value) => DbCrud.SetShort(dbId, dbRef, setter, (short)value); break;
-                case "string": return (dbId, dbRef, setter, value) => DbCrud.SetString(dbId, dbRef, setter, (string)value); break;
-                case "uint": return (dbId, dbRef, setter, value) => DbCrud.SetUInt(dbId, dbRef, setter, (uint)value); break;
-                case "ulong": return (dbId, dbRef, setter, value) => DbCrud.SetULong(dbId, dbRef, setter, (ulong)value); break;
-                case "ushort": return (dbId, dbRef, setter, value) => DbCrud.SetUShort(dbId, dbRef, setter, (ushort)value); break;
-                case "byte[]": return (dbId, dbRef, setter, value) => DbCrud.SetBinary(dbId, dbRef, setter, (byte[])value); break;
+                case "bool": return (dbId, dbRef, setter, value) => DbCrud.SetBool(dbId, dbRef, setter, (bool)value);
+                case "byte": return (dbId, dbRef, setter, value) => DbCrud.SetByte(dbId, dbRef, setter, (byte)value);
+                case "char": return (dbId, dbRef, setter, value) => DbCrud.SetChar(dbId, dbRef, setter, (char)value);
+                case "DateTime": return (dbId, dbRef, setter, value) => DbCrud.SetDateTime(dbId, dbRef, setter, (DateTime)value);
+                case "decimal": return (dbId, dbRef, setter, value) => DbCrud.SetDecimal(dbId, dbRef, setter, (decimal)value);
+                case "double": return (dbId, dbRef, setter, value) => DbCrud.SetDouble(dbId, dbRef, setter, (double)value);
+                case "float": return (dbId, dbRef, setter, value) => DbCrud.SetFloat(dbId, dbRef, setter, (float)value);
+                case "int": return (dbId, dbRef, setter, value) => DbCrud.SetInt(dbId, dbRef, setter, (int)value);
+                case "long": return (dbId, dbRef, setter, value) => DbCrud.SetLong(dbId, dbRef, setter, (long)value);
+                case "sbyte": return (dbId, dbRef, setter, value) => DbCrud.SetSByte(dbId, dbRef, setter, (sbyte)value);
+                case "short": return (dbId, dbRef, setter, value) => DbCrud.SetShort(dbId, dbRef, setter, (short)value);
+                case "string": return (dbId, dbRef, setter, value) => DbCrud.SetString(dbId, dbRef, setter, (string)value);
+                case "uint": return (dbId, dbRef, setter, value) => DbCrud.SetUInt(dbId, dbRef, setter, (uint)value);
+                case "ulong": return (dbId, dbRef, setter, value) => DbCrud.SetULong(dbId, dbRef, setter, (ulong)value);
+                case "ushort": return (dbId, dbRef, setter, value) => DbCrud.SetUShort(dbId, dbRef, setter, (ushort)value);
+                case "byte[]": return (dbId, dbRef, setter, value) => DbCrud.SetBinary(dbId, dbRef, setter, (byte[])value);
                 case "reference": return (dbId, dbRef, setter, value) =>
                 {
                     ulong? parentDbId = value as ulong?;

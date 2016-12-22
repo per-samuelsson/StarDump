@@ -1,4 +1,4 @@
-namespace StarDump.Core
+namespace StarDump.Common
 {
     public enum MetaInfoType
     {

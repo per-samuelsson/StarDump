@@ -1,10 +1,9 @@
 using System;
 using System.Text;
 using System.Collections.Generic;
-using Microsoft.Data.Sqlite;
-using Starcounter;
+using System.Data.Common;
 
-namespace StarDump.Core
+namespace StarDump.Common
 {
     public class SqlHelper
     {
@@ -22,17 +21,18 @@ namespace StarDump.Core
         public string GenerateInsertMetadataTable(UnloadTable table)
         {
             StringBuilder sql = new StringBuilder();
+            ulong? parentId = table.GetParentId();
 
             sql.Append("INSERT INTO `Starcounter.Metadata.Table` (`Id`, `Name`, `ParentId`) VALUES (");
             sql.Append((long)table.ObjectId).Append(", '").Append(table.FullName).Append("', ");
 
-            if (table.RawView.Inherits == null)
+            if (parentId == null)
             {
                 sql.Append("NULL");
             }
             else
             {
-                sql.Append((long)table.RawView.Inherits.GetObjectNo());
+                sql.Append((long)parentId);
             }
 
             sql.Append(");");
@@ -154,7 +154,7 @@ namespace StarDump.Core
             return sql.ToString();
         }
 
-        public string GenerateInsertInto(UnloadTable table, UnloadRow row)
+        public string GenerateInsertInto(UnloadTable table, DumpRow row)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -165,7 +165,7 @@ namespace StarDump.Core
             return sql.ToString();
         }
 
-        public string GenerateInsertInto(UnloadTable table, List<UnloadRow> rows)
+        public string GenerateInsertInto(UnloadTable table, List<DumpRow> rows)
         {
             StringBuilder sql = new StringBuilder();
 
@@ -336,7 +336,7 @@ namespace StarDump.Core
             }
         }
 
-        public void SetupSqliteConnection(SqliteConnection cn)
+        public void SetupSqliteConnection(DbConnection cn)
         {
             // http://blog.quibb.org/2010/08/fast-bulk-inserts-into-sqlite/
             this.ExecuteNonQuery("PRAGMA synchronous=OFF", cn);
@@ -349,9 +349,11 @@ namespace StarDump.Core
             this.ExecuteNonQuery("PRAGMA read_uncommitted=TRUE", cn);
         }
 
-        public void ExecuteNonQuery(string sql, SqliteConnection cn)
+        public void ExecuteNonQuery(string sql, DbConnection cn)
         {
-            SqliteCommand cmd = new SqliteCommand(sql, cn);
+            DbCommand cmd = cn.CreateCommand();
+
+            cmd.CommandText = sql;
 
             try
             {
@@ -363,11 +365,11 @@ namespace StarDump.Core
             }
         }
 
-        public void GenerateInsertIntoValues(List<UnloadColumn> columns, List<UnloadRow> rows, StringBuilder sql)
+        public void GenerateInsertIntoValues<TColumn>(List<TColumn> columns, List<DumpRow> rows, StringBuilder sql) where TColumn : UnloadColumn
         {
             bool first = true;
 
-            foreach (UnloadRow row in rows)
+            foreach (DumpRow row in rows)
             {
                 if (!first)
                 {
@@ -379,9 +381,9 @@ namespace StarDump.Core
             }
         }
 
-        public void GenerateInsertIntoValues(List<UnloadColumn> columns, UnloadRow row, StringBuilder sql)
+        public void GenerateInsertIntoValues<TColumn>(List<TColumn> columns, DumpRow row, StringBuilder sql) where TColumn : UnloadColumn
         {
-            sql.Append("(").Append((long)row.DbGetIdentity());
+            sql.Append("(").Append((long)row.DbObjectIdentity);
 
             foreach (var c in columns)
             {

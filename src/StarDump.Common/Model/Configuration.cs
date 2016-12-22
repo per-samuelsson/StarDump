@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace StarDump.Core
+namespace StarDump.Common
 {
     public class Configuration
     {
@@ -18,7 +18,7 @@ namespace StarDump.Core
 
             this.FileName = Path.Combine(path, name);
 
-            this.Output = new Output();
+            // this.Output = new Output();
         }
 
         public int Verbose { get; set; }
@@ -27,7 +27,7 @@ namespace StarDump.Core
         public string[] SkipColumnPrefixes { get; set; }
         public string[] SkipTablePrefixes { get; set; }
         public int InsertRowsBufferSize { get; set; }
-        public Output Output { get; set; }
+        // public Output Output { get; set; }
 
         public FileInfo FileInfo
         {

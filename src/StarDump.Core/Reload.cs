@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Starcounter;
 using Starcounter.Database.Interop;
+using StarDump.Common;
 
 namespace StarDump.Core
 {
@@ -91,7 +92,7 @@ namespace StarDump.Core
             tablesCount = tables.Count;
 
             List<Task> tasks = new List<Task>();
-            List<ReloadTable> roots = new List<ReloadTable>();
+            List<StarDump.Common.ReloadTable> roots = new List<StarDump.Common.ReloadTable>();
 
             foreach (ReloadTable t in tables)
             {
@@ -123,7 +124,7 @@ namespace StarDump.Core
             }
         }
 
-        protected void CreateTables(SqliteConnection cn, List<ReloadTable> tables)
+        protected void CreateTables(SqliteConnection cn, List<StarDump.Common.ReloadTable> tables)
         {
             foreach (ReloadTable t in tables)
             {

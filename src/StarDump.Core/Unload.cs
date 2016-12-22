@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
 using Starcounter;
+using StarDump.Common;
 
 namespace StarDump.Core
 {
@@ -93,9 +94,9 @@ namespace StarDump.Core
                     }
 
                     var proxy = row as Starcounter.Abstractions.Database.IDbProxy;
-                    UnloadRow r = new UnloadRow(proxy.DbGetIdentity(), proxy.DbGetReference());
+                    DumpRow r = new UnloadRow(proxy.DbGetIdentity(), proxy.DbGetReference());
 
-                    r.Fill(table);
+                    table.FillRow(r);
                     table.Rows.Add(r);
                     rowsCount++;
                     table.RowsCount++;
@@ -106,7 +107,7 @@ namespace StarDump.Core
                     }
 
                     tasks.Add(this.InsertRows(cn, table.InsertIntoDefinition, table.Columns, table.Rows));
-                    table.Rows = new List<UnloadRow>();
+                    table.Rows = new List<DumpRow>();
                     this.RowsChunkUnloaded?.Invoke(this, table.FullName);
                 }
 
@@ -171,7 +172,7 @@ namespace StarDump.Core
             this.SqlHelper.ExecuteNonQuery(sql, cn);
         }
 
-        protected Task InsertRows(SqliteConnection cn, string insertDefinition, List<UnloadColumn> columns, List<UnloadRow> rows)
+        protected Task InsertRows(SqliteConnection cn, string insertDefinition, List<StarDump.Common.UnloadColumn> columns, List<DumpRow> rows)
         {
             return Task.Run(() =>
             {
@@ -185,13 +186,13 @@ namespace StarDump.Core
             });
         }
 
-        protected Task InsertRowWithParams(SqliteConnection cn, string sql, UnloadColumn[] columns, UnloadRow row)
+        protected Task InsertRowWithParams(SqliteConnection cn, string sql, UnloadColumn[] columns, DumpRow row)
         {
             return Task.Run(() =>
             {
                 SqliteCommand cmd = new SqliteCommand(sql, cn);
 
-                cmd.Parameters.Add(new SqliteParameter() { ParameterName = "@ObjectNo", Value = row.DbGetIdentity() });
+                cmd.Parameters.Add(new SqliteParameter() { ParameterName = "@ObjectNo", Value = row.DbObjectIdentity });
 
                 foreach (UnloadColumn c in columns)
                 {
@@ -223,9 +224,9 @@ namespace StarDump.Core
             return specifier.TypeId;
         }
 
-        protected string GetSetSpecifier(ulong dbHandle, UnloadRow row)
+        protected string GetSetSpecifier(ulong dbHandle, DumpRow row)
         {
-            var m = Db.FromId<Starcounter.Internal.Metadata.MotherOfAllLayouts>(row.DbGetIdentity());
+            var m = Db.FromId<Starcounter.Internal.Metadata.MotherOfAllLayouts>(row.DbObjectIdentity);
             string s = this.GetSetSpecifier(dbHandle, m);
 
             return s;
@@ -242,7 +243,7 @@ namespace StarDump.Core
         /// <summary>
         /// Returns true if row belongs to specifier, false otherwise
         /// </summary>
-        protected bool SetSpecifierEquals(ulong dbHandle, Starcounter.Internal.Metadata.SetSpecifier specifier, UnloadRow row)
+        protected bool SetSpecifierEquals(ulong dbHandle, Starcounter.Internal.Metadata.SetSpecifier specifier, DumpRow row)
         {
             string s = this.GetSetSpecifier(dbHandle, row);
 

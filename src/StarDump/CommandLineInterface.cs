@@ -63,7 +63,7 @@ namespace StarDump
 
                   target.OnExecute(() =>
                   {
-                      StarDump.Core.Configuration starDumpConfiguration = new StarDump.Core.Configuration();
+                      StarDump.Common.Configuration starDumpConfiguration = new StarDump.Common.Configuration();
 
                       // Database Option
                       if (optionDatabase.HasValue())
@@ -117,7 +117,7 @@ namespace StarDump
                       // Execute Unload
                       try
                       {
-                          bool execution = StarDump.Core.CommandInterface.Unload(starDumpConfiguration);
+                          bool execution = StarDump.Core.CommandInterface.Unload(starDumpConfiguration, new StarDump.Core.Output());
                           return execution ? 0 : -1;
                       }
                       catch (Exception e)
@@ -145,7 +145,7 @@ namespace StarDump
 
                   target.OnExecute(() =>
                   {
-                      StarDump.Core.Configuration starDumpConfiguration = new StarDump.Core.Configuration();
+                      StarDump.Common.Configuration starDumpConfiguration = new StarDump.Common.Configuration();
 
                       // Database Option
                       if (!optionDatabase.HasValue())
@@ -169,7 +169,7 @@ namespace StarDump
                       // Execute Reload
                       try
                       {
-                          bool execution = StarDump.Core.CommandInterface.Reload(starDumpConfiguration);
+                          bool execution = StarDump.Core.CommandInterface.Reload(starDumpConfiguration, new StarDump.Core.Output());
                           return execution ? 0 : -1;
                       }
                       catch (Exception e)

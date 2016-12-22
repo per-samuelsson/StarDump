@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Starcounter;
+using StarDump.Common;
 
 namespace StarDump.Core
 {
@@ -21,7 +22,7 @@ namespace StarDump.Core
             // config.FileName = @"D:\Temp\Core\Database\stardump-default-2016.12.06-00.55.sqlite3";
             // config.DatabaseName = "reload";
 
-            CommandInterface.Unload(config);
+            CommandInterface.Unload(config, new Output());
             //Reload(config);
         }
     }

@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
 using Starcounter.Database.Interop;
+using StarDump.Common;
 
 namespace StarDump.Core
 {
-    public class UnloadRow : Dictionary<string, object>, Starcounter.Abstractions.Database.IDbProxy
+    public class UnloadRow : StarDump.Common.DumpRow, Starcounter.Abstractions.Database.IDbProxy
     {
-        public ulong DbObjectIdentity { get; protected set; }
-        public ulong DbObjectReference { get; protected set; }
-
         public static void RegisterDatabaseType()
         {
             Db.BindDatabaseClass(typeof(UnloadRow), (dbId, dbRef) => 
@@ -19,10 +17,8 @@ namespace StarDump.Core
             });
         }
 
-        public UnloadRow(ulong dbId, ulong dbRef)
+        public UnloadRow(ulong dbId, ulong dbRef) : base(dbId, dbRef)
         {
-            this.DbObjectIdentity = dbId;
-            this.DbObjectReference = dbRef;
         }
 
         public void Fill(UnloadTable table)

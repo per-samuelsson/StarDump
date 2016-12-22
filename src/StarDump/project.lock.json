@@ -2715,12 +2715,21 @@
           "Starcounter.Error": "0.1.0"
         }
       },
+      "StarDump.Common/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v1.0",
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.0",
+          "System.Data.Common": "4.3.0"
+        }
+      },
       "StarDump.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.0",
         "dependencies": {
           "Microsoft.Data.Sqlite": "1.1.0",
           "Microsoft.NETCore.App": "1.1.0",
+          "StarDump.Common": "1.0.0",
           "Starcounter": "1.0.0"
         }
       }
@@ -5606,12 +5615,21 @@
           "Starcounter.Error": "0.1.0"
         }
       },
+      "StarDump.Common/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v1.0",
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.0",
+          "System.Data.Common": "4.3.0"
+        }
+      },
       "StarDump.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.0",
         "dependencies": {
           "Microsoft.Data.Sqlite": "1.1.0",
           "Microsoft.NETCore.App": "1.1.0",
+          "StarDump.Common": "1.0.0",
           "Starcounter": "1.0.0"
         }
       }
@@ -8496,12 +8514,21 @@
           "Starcounter.Error": "0.1.0"
         }
       },
+      "StarDump.Common/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v1.0",
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.0",
+          "System.Data.Common": "4.3.0"
+        }
+      },
       "StarDump.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.0",
         "dependencies": {
           "Microsoft.Data.Sqlite": "1.1.0",
           "Microsoft.NETCore.App": "1.1.0",
+          "StarDump.Common": "1.0.0",
           "Starcounter": "1.0.0"
         }
       }
@@ -11347,12 +11374,21 @@
           "Starcounter.Error": "0.1.0"
         }
       },
+      "StarDump.Common/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v1.0",
+        "dependencies": {
+          "Microsoft.NETCore.App": "1.1.0",
+          "System.Data.Common": "4.3.0"
+        }
+      },
       "StarDump.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.0",
         "dependencies": {
           "Microsoft.Data.Sqlite": "1.1.0",
           "Microsoft.NETCore.App": "1.1.0",
+          "StarDump.Common": "1.0.0",
           "Starcounter": "1.0.0"
         }
       }
@@ -17886,6 +17922,10 @@
     "Starcounter.X6Decimal/0.1.0": {
       "type": "project",
       "path": "../../../Starcounter.Core/src/Starcounter.X6Decimal/project.json"
+    },
+    "StarDump.Common/1.0.0": {
+      "type": "project",
+      "path": "../StarDump.Common/project.json"
     },
     "StarDump.Core/1.0.0": {
       "type": "project",

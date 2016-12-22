@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using StarDump.Common;
 
 namespace StarDump.Core
 {
@@ -11,9 +12,9 @@ namespace StarDump.Core
     {
         internal static Output Out;
 
-        public static bool Reload(Configuration config)
+        public static bool Reload(Configuration config, Output output)
         {
-            Out = config.Output;
+            Out = output;
 
             Reload reload = new Reload(config);
 
@@ -42,9 +43,9 @@ namespace StarDump.Core
             return true;
         }
 
-        public static bool Unload(Configuration config)
+        public static bool Unload(Configuration config, Output output)
         {
-            Out = config.Output;
+            Out = output;
 
             Unload unload = new Unload(config);
 
