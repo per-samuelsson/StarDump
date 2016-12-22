@@ -9,6 +9,7 @@ from pathlib import Path
 
 def main():
 	setGlobalVariables()
+	restoreStarcounterCore()
 	restoreStarDumpCoreTests()
 	executeStarDumpCoreTests()
 	restoreStarDump()
@@ -25,6 +26,15 @@ def setGlobalVariables():
 	rootPath = Path(os.getcwd()).parent
 	publishBasePath = "\\src\\StarDump\\bin\\publish"
 
+# Restore Starcounter.Core
+def restoreStarcounterCore():
+	dotnet_cmd = "dotnet restore {0}".format(Path(rootPath).parent)
+	print("-- Restore Starcounter.Core projects: {0}".format(dotnet_cmd))
+	exit_code = subprocess.call(dotnet_cmd, shell=True)
+	if 0 != exit_code:
+		print("-- Restore Starcounter.Core projects exited with error code {0}!".format(exit_code))
+		sys.exit(exit_code)
+	
 # Restore StarDump.Core.Tests
 def restoreStarDumpCoreTests():
 	dotnet_cmd = "dotnet restore {0}\\test\\StarDump.Core.Tests".format(rootPath)
