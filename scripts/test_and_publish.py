@@ -1,15 +1,16 @@
-import os, glob, sys, subprocess
-import shutil # used to zip published folder
+import os, glob, sys, subprocess, shutil
 
+#################################################################################
+#
+# The script assumes that the callers path is the root of StarDump repository
+#
+# Optional argument:
+#	Name of archive zip file, Default is "StarDump"
+# 
+#################################################################################
 
 def main():
-	if len(sys.argv) != 2:
-		print("Base path to StarDump repository is needed as argument")
-		sys.exit(1)
-	
-	global rootPath	
-	rootPath = sys.argv[1]
-
+	setGlobalVariables()
 	restoreStarDumpCoreTests()
 	executeStarDumpCoreTests()
 	restoreStarDump()
@@ -18,6 +19,19 @@ def main():
 
 	print("-- StarDump tests and publish succeeded!")
 	sys.exit(0)
+
+# Init function, sets global variables
+def setGlobalVariables():
+	global rootPath	
+	global publishBasePath
+	global fileName
+
+	rootPath = os.getcwd()
+	publishBasePath = "\\src\\StarDump\\bin\\publish"
+	if len(sys.argv) < 2:
+		fileName = "StarDump"
+	else:
+		fileName = sys.argv[1]
 
 # Restore StarDump.Core.Tests
 def restoreStarDumpCoreTests():
@@ -48,23 +62,23 @@ def restoreStarDump():
 
 # Publish StarDump
 def publishStarDump():
-	dotnet_cmd = "dotnet publish {0}\\src\\StarDump -o {0}\\src\\StarDump\\publish\\StarDump".format(rootPath)
+	dotnet_cmd = "dotnet publish {0}\\src\\StarDump -o {0}\\{1}\\StarDump".format(rootPath, publishBasePath)
 	print("-- Publish StarDump project: {0}".format(dotnet_cmd))
 	exit_code = subprocess.call(dotnet_cmd, shell=True)
 	if 0 != exit_code:
 		print("-- Publish StarDump project exited with error code {0}!".format(exit_code))
 		sys.exit(exit_code)
 
-# Archive published directory (StarDump.zip)
+# Archive published directory
 def archiveStarDump():
 	try:
-		archive_name = shutil.make_archive("{0}\\StarDump".format(rootPath), "zip", "{0}\\src\\StarDump\\publish".format(rootPath), "StarDump", 1)
+		archive_name = shutil.make_archive("{0}\\scripts\\publish\\{1}".format(rootPath, fileName), "zip", "{0}\\{1}".format(rootPath, publishBasePath), "StarDump")
+		#TODO: Call TeamCity-Whitelist-Tool with archive_name as argument when it is done
 	except:
 		print("Archive failed")
 		sys.exit(1)
 	
-	print("StarDump has been published at {0}".format(archive_name))
-
+	print("-- StarDump has been published at {0}".format(archive_name))
 
 
 if __name__ == "__main__":
