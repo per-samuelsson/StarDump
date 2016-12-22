@@ -3,9 +3,6 @@ import os, glob, sys, subprocess, shutil
 #################################################################################
 #
 # The script assumes that the callers path is the root of StarDump repository
-#
-# Optional argument:
-#	Name of archive zip file, Default is "StarDump"
 # 
 #################################################################################
 
@@ -15,7 +12,6 @@ def main():
 	executeStarDumpCoreTests()
 	restoreStarDump()
 	publishStarDump()
-	archiveStarDump()
 
 	print("-- StarDump tests and publish succeeded!")
 	sys.exit(0)
@@ -24,14 +20,9 @@ def main():
 def setGlobalVariables():
 	global rootPath	
 	global publishBasePath
-	global fileName
 
 	rootPath = os.getcwd()
 	publishBasePath = "\\src\\StarDump\\bin\\publish"
-	if len(sys.argv) < 2:
-		fileName = "StarDump"
-	else:
-		fileName = sys.argv[1]
 
 # Restore StarDump.Core.Tests
 def restoreStarDumpCoreTests():
@@ -68,18 +59,6 @@ def publishStarDump():
 	if 0 != exit_code:
 		print("-- Publish StarDump project exited with error code {0}!".format(exit_code))
 		sys.exit(exit_code)
-
-# Archive published directory
-def archiveStarDump():
-	try:
-		archive_name = shutil.make_archive("{0}\\scripts\\publish\\{1}".format(rootPath, fileName), "zip", "{0}\\{1}".format(rootPath, publishBasePath), "StarDump")
-		#TODO: Call TeamCity-Whitelist-Tool with archive_name as argument when it is done
-	except:
-		print("Archive failed")
-		sys.exit(1)
-	
-	print("-- StarDump has been published at {0}".format(archive_name))
-
 
 if __name__ == "__main__":
     main()
