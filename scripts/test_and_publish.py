@@ -1,8 +1,9 @@
-import os, glob, sys, subprocess, shutil
+import os, glob, sys, subprocess
+from pathlib import Path
 
 #################################################################################
 #
-# The script assumes that the callers path is the root of StarDump repository
+# The script assumes that the callers path is at the same place as this file
 # 
 #################################################################################
 
@@ -21,7 +22,7 @@ def setGlobalVariables():
 	global rootPath	
 	global publishBasePath
 
-	rootPath = os.getcwd()
+	rootPath = Path(os.getcwd()).parent
 	publishBasePath = "\\src\\StarDump\\bin\\publish"
 
 # Restore StarDump.Core.Tests
@@ -53,7 +54,7 @@ def restoreStarDump():
 
 # Publish StarDump
 def publishStarDump():
-	dotnet_cmd = "dotnet publish {0}\\src\\StarDump -o {0}\\{1}\\StarDump".format(rootPath, publishBasePath)
+	dotnet_cmd = "dotnet publish {0}\\src\\StarDump -o {0}{1}\\StarDump".format(rootPath, publishBasePath)
 	print("-- Publish StarDump project: {0}".format(dotnet_cmd))
 	exit_code = subprocess.call(dotnet_cmd, shell=True)
 	if 0 != exit_code:
