@@ -256,7 +256,15 @@ namespace StarDump.Core
             {  
                 long id = reader.GetInt64(0);
                 string name = reader.GetString(1);
-                long parentId = reader.GetInt64(2);
+                long parentId = 0;
+
+                object value = reader.GetValue(2);
+                
+                if (!DBNull.Value.Equals(value))
+                {
+                    parentId = Convert.ToInt64(value);
+                }
+
                 ReloadTable t = new ReloadTable()
                 {
                     Id = id,
