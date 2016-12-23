@@ -28,7 +28,7 @@ def setGlobalVariables():
 
 # Restore Starcounter.Core
 def restoreStarcounterCore():
-	dotnet_cmd = "dotnet restore {0}".format(Path(rootPath).parent)
+	dotnet_cmd = "dotnet restore {0}\\Starcounter.Core".format(Path(rootPath).parent)
 	print("-- Restore Starcounter.Core projects: {0}".format(dotnet_cmd))
 	exit_code = subprocess.call(dotnet_cmd, shell=True)
 	if 0 != exit_code:
