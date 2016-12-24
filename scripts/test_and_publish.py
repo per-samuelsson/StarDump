@@ -18,12 +18,16 @@ def main():
 	print("-- StarDump tests and publish succeeded!")
 	sys.exit(0)
 
+# Getting path of the script.
+def get_script_path():
+    return os.path.dirname(__file__)
+	
 # Init function, sets global variables
 def setGlobalVariables():
 	global rootPath	
 	global publishBasePath
 
-	rootPath = Path(os.getcwd()).parent
+	rootPath = Path(get_script_path()).parent
 	publishBasePath = "\\src\\StarDump\\bin\\publish"
 
 # Restore Starcounter.Core
