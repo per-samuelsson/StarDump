@@ -241,7 +241,7 @@ namespace StarDump.Common
             }
         }
 
-        public object ConvertFromStarcounterToSqlite(string starcounterDataTypeName, object value)
+        public virtual object ConvertFromStarcounterToSqlite(string starcounterDataTypeName, object value)
         {
             if (value == null)
             {
@@ -250,46 +250,50 @@ namespace StarDump.Common
 
             switch (starcounterDataTypeName)
             {
-                case "bool": return (bool)value ? 1 : 0;
-                case "byte": return (long)((byte)value);
-                case "char": return (long)((char)value);
+                case "bool?":
+                case "bool": return Convert.ToBoolean(value) ? 1 : 0;
+
+                case "decimal?":
+                case "decimal": return (Convert.ToDecimal(value)).ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+
+                case "DateTime?":
                 case "DateTime": return ((DateTime)value).Ticks;
-                case "decimal": return ((decimal)value).ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-                case "double": return (double)value;
-                case "float": return (double)((float)value);
-                case "int": return (long)((int)value);
-                case "long": return (long)value;
-                case "sbyte": return (long)((sbyte)value);
-                case "short": return (long)((short)value);
+
+                case "double?":
+                case "double": return Convert.ToDouble(value);
+                case "float?":
+                case "float": return Convert.ToDouble(value);
+
                 case "string?":
                 case "string": return value as string;
-                case "uint": return (long)((uint)value);
-                case "ulong": return (long)((ulong)value);
-                case "ushort": return (long)((ushort)value);
-                
-                case "bool?": return ((bool?)value).Value ? 1 : 0;
-                case "byte?": return (long)(value as byte?).Value;
-                case "char?": return (long)(value as char?).Value;
-                case "DateTime?": return (value as DateTime?).Value.Ticks;
-                case "decimal?": return decimal.Parse((string)value, System.Globalization.CultureInfo.InvariantCulture.NumberFormat) as decimal?;
-                case "double?": return (value as double?).Value;
-                case "float?": return (double)(value as float?).Value;
-                case "int?": return (long)(value as int?).Value;
-                case "long?": return (value as long?).Value;
-                case "sbyte?": return (long)(value as sbyte?).Value;
-                case "short?": return (long)(value as short?).Value;
-                case "uint?": return (long)(value as uint?).Value;
+
+                case "byte?":
+                case "byte":
+                case "char?":
+                case "char":
+                case "int?":
+                case "int":
+                case "long?":
+                case "long":
+                case "sbyte?":
+                case "sbyte":
+                case "short?":
+                case "short":
+                case "uint?":
+                case "uint":
+                case "ulong":
+                case "ushort":
                 case "reference":
                 case "reference?":
-                case "ulong?": return (long)(value as ulong?).Value;
-                case "ushort?": return (long)(value as ushort?).Value;
+                case "ulong?":
+                case "ushort?": return Convert.ToInt64(value);
 
                 case "byte[]":
                 default: throw new NotImplementedException("The data type [" + starcounterDataTypeName + "] is not supported.");
             }
         }
 
-        public object ConvertFromSqliteToStarcounter(string starcounterDataTypeName, object value)
+        public virtual object ConvertFromSqliteToStarcounter(string starcounterDataTypeName, object value)
         {
             if (value == null || System.DBNull.Value.Equals(value))
             {
