@@ -54,7 +54,7 @@ namespace StarDump
               {
                   target.Description = "Unload database";
                   optionDatabase = target.Option("-db | --database <DatabaseName>", "Name of starcounter database to dump", CommandOptionType.SingleValue);
-                  optionDump = target.Option("-d | --dump <DumpFileName>", "Output dump filename", CommandOptionType.SingleValue);
+                  optionDump = target.Option("-f | --file <FileName>", "Output dump filename", CommandOptionType.SingleValue);
                   optionBufferSize = target.Option("-b | --buffersize <BufferSize>", "Set insert rows buffer size to dump database.", CommandOptionType.SingleValue);
                   optionSkipColumnPrefixes = target.Option("-scp | --skipcolumnprefixes <ColumnPrefixes>", "Column prefixes to skip, space and/or comma separated. Example: -scp=\"a b,c\"", CommandOptionType.SingleValue);
                   optionSkipTablePrefixes = target.Option("-stp | --skiptableprefixes <TablePrefixes>", "Table prefixes to skip, space and/or comma separated. Example: -scp=\"a b,c\"", CommandOptionType.SingleValue);
@@ -139,8 +139,8 @@ namespace StarDump
               (target) =>
               {
                   target.Description = "Reload database";
-                  optionDatabase = target.Option("-db | --database <databasename>", "Name of starcounter database to dump", CommandOptionType.SingleValue);
-                  optionDump = target.Option("-d | --dump <fullfilename>", "Output dump filename", CommandOptionType.SingleValue);
+                  optionDatabase = target.Option("-db | --database <DatabaseName>", "Name of starcounter database to dump", CommandOptionType.SingleValue);
+                  optionDump = target.Option("-f | --file <FullFileName>", "Full name to dump file", CommandOptionType.SingleValue);
                   target.HelpOption(HELP_TEMPLATE);
 
                   target.OnExecute(() =>
