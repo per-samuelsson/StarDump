@@ -5,25 +5,25 @@
 **Unload database**
 
 ```
->StarDump.exe unload --database [DatabaseName] --dump [FilePath]
+>StarDump.exe unload --database [DatabaseName] --file [FilePath]
 ```
 
 Example
 
 ```
->StarDump.exe unload --database default --dump C:\Temp\default.sqlite3
+>StarDump.exe unload --database default --file C:\Temp\default.sqlite3
 ```
 
 **Reload database**
 
 ```
->StarDump.exe reload --database [DatabaseName] --dump [FilePath]
+>StarDump.exe reload --database [DatabaseName] --file [FilePath]
 ```
 
 Example
 
 ```
->StarDump.exe reload --database default --dump C:\Temp\default.sqlite3
+>StarDump.exe reload --database default --file C:\Temp\default.sqlite3
 ```
 
 **Note:** the database should be dropped and created prior to reload.
