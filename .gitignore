@@ -37,6 +37,10 @@ x64/
 .builds
 .vs
 
+# DNX
+project.lock.json
+*.xproj
+
 # Visual C++ cache files
 ipch/
 *.aps
