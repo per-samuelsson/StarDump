@@ -10,7 +10,7 @@ from pathlib import Path
 def main():
 	setGlobalVariables()
 	restoreStarcounterCore()
-	restoreStarDump()
+	restoreStarDumpBase()
 	restoreStarDumpCoreTests()
 	executeStarDumpCoreTests()
 	restoreStarDump()
@@ -40,8 +40,8 @@ def restoreStarcounterCore():
 		print("-- Restore Starcounter.Core projects exited with error code {0}!".format(exit_code))
 		sys.exit(exit_code)
 
-# Restore StarDump.Core.Tests
-def restoreStarDump():
+# Restore StarDump Base repository
+def restoreStarDumpBase():
 	dotnet_cmd = "dotnet restore {0}".format(rootPath)
 	print("-- Restore StarDump projects: {0}".format(dotnet_cmd))
 	exit_code = subprocess.call(dotnet_cmd, shell=True)
