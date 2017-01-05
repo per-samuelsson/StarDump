@@ -1,15 +1,16 @@
 import os, glob, sys, subprocess
 from pathlib import Path
 
-#################################################################################
+##################################################
 #
-# The script assumes that the callers path is at the same place as this file
+# Script which tests and pusblishes StarDump
 # 
-#################################################################################
+##################################################
 
 def main():
 	setGlobalVariables()
 	restoreStarcounterCore()
+	restoreStarDump()
 	restoreStarDumpCoreTests()
 	executeStarDumpCoreTests()
 	restoreStarDump()
@@ -38,7 +39,16 @@ def restoreStarcounterCore():
 	if 0 != exit_code:
 		print("-- Restore Starcounter.Core projects exited with error code {0}!".format(exit_code))
 		sys.exit(exit_code)
-	
+
+# Restore StarDump.Core.Tests
+def restoreStarDump():
+	dotnet_cmd = "dotnet restore {0}".format(rootPath)
+	print("-- Restore StarDump projects: {0}".format(dotnet_cmd))
+	exit_code = subprocess.call(dotnet_cmd, shell=True)
+	if 0 != exit_code:
+		print("-- Restore StarDump projects exited with error code {0}!".format(exit_code))
+		sys.exit(exit_code)
+		
 # Restore StarDump.Core.Tests
 def restoreStarDumpCoreTests():
 	dotnet_cmd = "dotnet restore {0}\\test\\StarDump.Core.Tests".format(rootPath)
