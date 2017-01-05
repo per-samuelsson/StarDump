@@ -165,8 +165,11 @@ namespace StarDump.Core
             string sql = this.SqlHelper.GenerateInsertMetadataTable(table);
             this.SqlHelper.ExecuteNonQuery(sql, cn);
 
-            sql = this.SqlHelper.GenerateInsertMetadataColumns(table);
-            this.SqlHelper.ExecuteNonQuery(sql, cn);
+            if (table.Columns.Any())
+            {
+                sql = this.SqlHelper.GenerateInsertMetadataColumns(table);
+                this.SqlHelper.ExecuteNonQuery(sql, cn);
+            }
 
             sql = this.SqlHelper.GenerateCreateTable(table);
             this.SqlHelper.ExecuteNonQuery(sql, cn);
