@@ -225,11 +225,11 @@ namespace StarDump.Common
                 case "reference":
                     return "INTEGER";
 
-                case "decimal":
                 case "double":
                 case "float":
                     return "REAL";
                 
+                case "decimal":
                 case "string":
                     return "TEXT";
 
@@ -302,38 +302,38 @@ namespace StarDump.Common
 
             switch (starcounterDataTypeName)
             {
-                case "bool": return (long)value == 1;
-                case "byte": return (byte)((long)value);
-                case "char": return (char)((long)value);
-                case "DateTime": return new DateTime((long)value);
-                case "decimal": return decimal.Parse((string)value, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-                case "double": return (double)value;
-                case "float": return (float)((double)value);
-                case "int": return (int)((long)value);
-                case "long": return (long)value;
-                case "sbyte": return (sbyte)((long)value);
-                case "short": return (short)((long)value);
+                case "bool": return Convert.ToInt64(value) == 1;
+                case "byte": return Convert.ToByte(value);
+                case "char": return Convert.ToChar(value);
+                case "DateTime": return new DateTime(Convert.ToInt64(value));
+                case "decimal": return decimal.Parse(Convert.ToString(value), System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+                case "double": return Convert.ToDouble(value);
+                case "float": return (float)Convert.ToDouble(value);
+                case "int": return Convert.ToInt32(value);
+                case "long": return Convert.ToInt64(value);
+                case "sbyte": return Convert.ToSByte(value);
+                case "short": return Convert.ToInt16(value);
                 case "string?":
-                case "string": return value as string;
-                case "uint": return (uint)((long)value);
-                case "ulong": return (ulong)((long)value);
-                case "ushort": return (ushort)((long)value);
-                case "bool?": return ((long)value == 1) as bool?;
-                case "byte?": return (byte)((long)value) as byte?;
-                case "char?": return (char)((long)value) as char?;
-                case "DateTime?": return new DateTime((long)value) as DateTime?;
-                case "decimal?": return decimal.Parse((string)value, System.Globalization.CultureInfo.InvariantCulture.NumberFormat) as decimal?;
-                case "double?": return (double)value as double?;
-                case "float?": return (float)((double)value) as float?;
-                case "int?": return (int)((long)value) as int?;
-                case "long?": return (long)value as long?;
-                case "sbyte?": return (sbyte)((long)value) as sbyte?;
-                case "short?": return (short)((long)value) as short?;
-                case "uint?": return (uint)((long)value) as uint?;
+                case "string": return Convert.ToString(value);
+                case "uint": return Convert.ToUInt32(value);
+                case "ulong": return Convert.ToUInt64(value);
+                case "ushort": return Convert.ToUInt16(value);
+                case "bool?": return (Convert.ToInt64(value) == 1) as bool?;
+                case "byte?": return Convert.ToByte(value) as byte?;
+                case "char?": return Convert.ToChar(value) as char?;
+                case "DateTime?": return new DateTime(Convert.ToInt64(value)) as DateTime?;
+                case "decimal?": return decimal.Parse(Convert.ToString(value), System.Globalization.CultureInfo.InvariantCulture.NumberFormat) as decimal?;
+                case "double?": return Convert.ToDouble(value) as double?;
+                case "float?": return (float)(Convert.ToDouble(value)) as float?;
+                case "int?": return Convert.ToInt32(value) as int?;
+                case "long?": return Convert.ToInt64(value) as long?;
+                case "sbyte?": return Convert.ToSByte(value) as sbyte?;
+                case "short?": return Convert.ToInt16(value) as short?;
+                case "uint?": return Convert.ToUInt32(value) as uint?;
                 case "reference":
                 case "reference?":
-                case "ulong?": return (ulong)((long)value) as ulong?;
-                case "ushort?": return (ushort)((long)value) as ushort?;
+                case "ulong?": return Convert.ToUInt64(value) as ulong?;
+                case "ushort?": return Convert.ToUInt16(value) as ushort?;
 
                 case "byte[]":
                 default: throw new NotImplementedException("The data type [" + starcounterDataTypeName + "] is not supported.");

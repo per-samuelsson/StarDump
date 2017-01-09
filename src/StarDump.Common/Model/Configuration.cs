@@ -5,10 +5,14 @@ namespace StarDump.Common
 {
     public class Configuration
     {
-        public Configuration()
+        public Configuration() : this("default")
+        {
+        }
+
+        public Configuration(string databaseName)
         {
             this.Verbose = 1;
-            this.DatabaseName = "default";
+            this.DatabaseName = databaseName;
             this.SkipColumnPrefixes = new string[] { "__" };
             this.SkipTablePrefixes = new string[] { "Starcounter.", "Concepts.", "SocietyObjects." };
             this.InsertRowsBufferSize = 500;
