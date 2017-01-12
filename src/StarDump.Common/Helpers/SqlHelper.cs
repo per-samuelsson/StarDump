@@ -317,7 +317,7 @@ namespace StarDump.Common
                 case "string?":
                 case "string": return Convert.ToString(value);
                 case "uint": return Convert.ToUInt32(value);
-                case "ulong": return (long)Convert.ToInt64(value);
+                case "ulong": return (ulong)Convert.ToInt64(value);
                 case "ushort": return Convert.ToUInt16(value);
                 case "bool?": return (Convert.ToInt64(value) == 1) as bool?;
                 case "byte?": return Convert.ToByte(value) as byte?;
