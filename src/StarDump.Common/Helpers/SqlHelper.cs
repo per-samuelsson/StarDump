@@ -281,12 +281,13 @@ namespace StarDump.Common
                 case "short":
                 case "uint?":
                 case "uint":
-                case "ulong":
                 case "ushort":
                 case "reference":
                 case "reference?":
-                case "ulong?":
                 case "ushort?": return Convert.ToInt64(value);
+
+                case "ulong":
+                case "ulong?": return (long)Convert.ToUInt64(value);
 
                 case "byte[]":
                 default: throw new NotImplementedException("The data type [" + starcounterDataTypeName + "] is not supported.");
@@ -316,7 +317,7 @@ namespace StarDump.Common
                 case "string?":
                 case "string": return Convert.ToString(value);
                 case "uint": return Convert.ToUInt32(value);
-                case "ulong": return Convert.ToUInt64(value);
+                case "ulong": return (long)Convert.ToInt64(value);
                 case "ushort": return Convert.ToUInt16(value);
                 case "bool?": return (Convert.ToInt64(value) == 1) as bool?;
                 case "byte?": return Convert.ToByte(value) as byte?;
@@ -332,7 +333,7 @@ namespace StarDump.Common
                 case "uint?": return Convert.ToUInt32(value) as uint?;
                 case "reference":
                 case "reference?":
-                case "ulong?": return Convert.ToUInt64(value) as ulong?;
+                case "ulong?": return (ulong?)Convert.ToInt64(value);
                 case "ushort?": return Convert.ToUInt16(value) as ushort?;
 
                 case "byte[]":
