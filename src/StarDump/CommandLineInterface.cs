@@ -135,12 +135,14 @@ namespace StarDump
         {
             CommandOption optionDatabase = null;
             CommandOption optionDump = null;
+            CommandOption optionForceReload = null;
             commandLineApplication.Command("reload",
               (target) =>
               {
                   target.Description = "Reload database";
                   optionDatabase = target.Option("-db | --database <DatabaseName>", "Name of starcounter database to dump", CommandOptionType.SingleValue);
                   optionDump = target.Option("-f | --file <FullFileName>", "Full name to dump file", CommandOptionType.SingleValue);
+                  optionForceReload = target.Option("-fr | --forcereload", "Force reload even if the database already contains data. User has to take care of object ID uniqueness.", CommandOptionType.NoValue);
                   target.HelpOption(HELP_TEMPLATE);
 
                   target.OnExecute(() =>
@@ -165,7 +167,8 @@ namespace StarDump
 
                       starDumpConfiguration.DatabaseName = optionDatabase.Value();
                       starDumpConfiguration.FileName = optionDump.Value();
-
+                      starDumpConfiguration.ForceReload = optionForceReload.HasValue();
+                      
                       // Execute Reload
                       try
                       {
