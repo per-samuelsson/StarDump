@@ -235,7 +235,7 @@ namespace StarDump.Core
             return s;
         }
 
-        protected string GetSetSpecifier(ulong dbHandle, Starcounter.Internal.Metadata.MotherOfAllLayouts row)
+        public string GetSetSpecifier(ulong dbHandle, Starcounter.Internal.Metadata.MotherOfAllLayouts row)
         {
             var proxy = row as Starcounter.Abstractions.Database.IDbProxy;
             string s = Db.GetSetSpecifier(proxy, dbHandle);
@@ -253,7 +253,7 @@ namespace StarDump.Core
             return specifier.TypeId == s;
         }
 
-        protected Dictionary<string, UnloadTable> SelectTables(ulong dbHandle)
+        public Dictionary<string, UnloadTable> SelectTables(ulong dbHandle)
         {
             IEnumerable<Starcounter.Metadata.RawView> query = Db.SQL<Starcounter.Metadata.RawView>("SELECT t FROM \"Starcounter.Metadata.RawView\" t");
             string[] prefixes = this.Configuration.SkipTablePrefixes;

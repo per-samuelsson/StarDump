@@ -49,6 +49,58 @@ namespace StarDump.Core
             var host = new AppHostBuilder().AddCommandLine(args).Build();
 
             host.Start();
+
+            bool abort = false;
+            if (config.ForceReload)
+            {
+                // Do nothing, reload even if db already contains data, user has to make sure of object ID uniqueness.
+            }
+            else
+            {
+                // Check if db is empty
+                Unload unload = new Unload(Configuration);
+                Db.Transact(() =>
+                {
+                    // Tables
+                    ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
+                    Dictionary<string, UnloadTable> tablesDictionary = unload.SelectTables(dbHandle);
+                    abort = tablesDictionary.Count() > 0 ? true : false;
+                    if (abort)
+                    {
+                        return;
+                    }
+
+                    // Rows
+                    string query = "SELECT m FROM Starcounter.Internal.Metadata.MotherOfAllLayouts m";
+                    var rows = Db.SQL<Starcounter.Internal.Metadata.MotherOfAllLayouts>(query);
+
+                    foreach (Starcounter.Internal.Metadata.MotherOfAllLayouts row in rows)
+                    {
+                        UnloadTable table;
+                        string specifier = unload.GetSetSpecifier(dbHandle, row);
+
+                        if (!tablesDictionary.TryGetValue(specifier, out table))
+                        {
+                            continue;
+                        }
+
+                        abort = true;
+                        return;
+                    }
+                });
+
+            }
+
+            if (abort)
+            {
+                // Write output
+
+                host.Dispose();
+                watch.Stop();
+
+                return null;
+            }
+
             cn.Open();
             
             this.SqlHelper.SetupSqliteConnection(cn);
