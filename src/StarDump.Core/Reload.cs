@@ -20,6 +20,7 @@ namespace StarDump.Core
         public SqlHelper SqlHelper { get; protected set; }
         public event EventHandler<string> ReloadTableStart;
         public event EventHandler<string> ReloadTableFinish;
+        public event EventHandler<string> ErrorEvent;
 
         public Reload(Configuration config)
         {
@@ -50,50 +51,12 @@ namespace StarDump.Core
 
             host.Start();
 
-            bool abort = false;
-            if (config.ForceReload)
-            {
-                // Do nothing, reload even if db already contains data, user has to make sure of object ID uniqueness.
-            }
-            else
-            {
-                // Check if db is empty
-                Unload unload = new Unload(Configuration);
-                Db.Transact(() =>
-                {
-                    // Tables
-                    ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
-                    Dictionary<string, UnloadTable> tablesDictionary = unload.SelectTables(dbHandle);
-                    abort = tablesDictionary.Count() > 0 ? true : false;
-                    if (abort)
-                    {
-                        return;
-                    }
-
-                    // Rows
-                    string query = "SELECT m FROM Starcounter.Internal.Metadata.MotherOfAllLayouts m";
-                    var rows = Db.SQL<Starcounter.Internal.Metadata.MotherOfAllLayouts>(query);
-
-                    foreach (Starcounter.Internal.Metadata.MotherOfAllLayouts row in rows)
-                    {
-                        UnloadTable table;
-                        string specifier = unload.GetSetSpecifier(dbHandle, row);
-
-                        if (!tablesDictionary.TryGetValue(specifier, out table))
-                        {
-                            continue;
-                        }
-
-                        abort = true;
-                        return;
-                    }
-                });
-
-            }
-
+            bool abort = this.AbortReload();
             if (abort)
             {
-                // Write output
+                this.ErrorEvent?.Invoke(this, string.Format("Aborting: --database={0} already contains tables other than --skiptableprefixes=\"{1}\".\r\n  Either create a new database OR\r\n  set --forcereload or --skiptableprefixes and take care of object ID uniqueness", 
+                    this.Configuration.DatabaseName,
+                    string.Join(", ", this.Configuration.SkipTablePrefixes)));
 
                 host.Dispose();
                 watch.Stop();
@@ -113,6 +76,55 @@ namespace StarDump.Core
             RunResult result = new RunResult(watch.Elapsed, tablesCount, rowsCount);
 
             return result;
+        }
+
+        /// <summary>
+        /// Returns true if Database contains tables other than the <see cref="Configuration.SkipTablePrefixes"/>.
+        /// Will always retun false if <see cref="Configuration.ForceReload"/> is true in which the user has to make sure of object ID uniqueness
+        /// </summary>
+        /// <returns></returns>
+        protected bool AbortReload()
+        {
+            bool abort = false;
+
+            if (this.Configuration.ForceReload)
+            {
+                // Force reload
+                return abort;
+            }
+
+            // Check if database is empty
+            Db.Transact(() =>
+            {
+                IEnumerable<Starcounter.Metadata.RawView> query = Db.SQL<Starcounter.Metadata.RawView>("SELECT t FROM \"Starcounter.Metadata.RawView\" t");
+                string[] prefixes = this.Configuration.SkipTablePrefixes;
+
+                foreach (Starcounter.Metadata.RawView t in query)
+                {
+                    switch (prefixes.Length)
+                    {
+                        case 0:
+                            break;
+                        case 1:
+                            if (t.FullName.StartsWith(prefixes[0]))
+                            {
+                                continue;
+                            }
+                            break;
+                        default:
+                            if (prefixes.Any(x => t.FullName.StartsWith(x)))
+                            {
+                                continue;
+                            }
+                            break;
+                    }
+
+                    abort = true;
+                    this.ErrorEvent?.Invoke(this, string.Format("Database is not empty: Table {0} exists.", t.FullName));
+                }
+            });
+
+            return abort;
         }
 
         protected Dictionary<string, byte> typeMap = new Dictionary<string, byte>()

@@ -57,7 +57,7 @@ namespace StarDump
                   optionDump = target.Option("-f | --file <FileName>", "Output dump filename", CommandOptionType.SingleValue);
                   optionBufferSize = target.Option("-b | --buffersize <BufferSize>", "Set insert rows buffer size to dump database.", CommandOptionType.SingleValue);
                   optionSkipColumnPrefixes = target.Option("-scp | --skipcolumnprefixes <ColumnPrefixes>", "Column prefixes to skip, space and/or comma separated. Example: -scp=\"a b,c\"", CommandOptionType.SingleValue);
-                  optionSkipTablePrefixes = target.Option("-stp | --skiptableprefixes <TablePrefixes>", "Table prefixes to skip, space and/or comma separated. Example: -scp=\"a b,c\"", CommandOptionType.SingleValue);
+                  optionSkipTablePrefixes = target.Option("-stp | --skiptableprefixes <TablePrefixes>", "Table prefixes to skip, space and/or comma separated. Example: -stp=\"a b,c\"", CommandOptionType.SingleValue);
 
                   target.HelpOption(HELP_TEMPLATE);
 
@@ -136,6 +136,7 @@ namespace StarDump
             CommandOption optionDatabase = null;
             CommandOption optionDump = null;
             CommandOption optionForceReload = null;
+            CommandOption optionSkipTablePrefixes = null;
             commandLineApplication.Command("reload",
               (target) =>
               {
@@ -143,6 +144,7 @@ namespace StarDump
                   optionDatabase = target.Option("-db | --database <DatabaseName>", "Name of starcounter database to dump", CommandOptionType.SingleValue);
                   optionDump = target.Option("-f | --file <FullFileName>", "Full name to dump file", CommandOptionType.SingleValue);
                   optionForceReload = target.Option("-fr | --forcereload", "Force reload even if the database already contains data. User has to take care of object ID uniqueness.", CommandOptionType.NoValue);
+                  optionSkipTablePrefixes = target.Option("-stp | --skiptableprefixes <TablePrefixes>", "Table prefixes to skip, space and/or comma separated. Example: -stp=\"a b,c\"", CommandOptionType.SingleValue);
                   target.HelpOption(HELP_TEMPLATE);
 
                   target.OnExecute(() =>
@@ -168,7 +170,13 @@ namespace StarDump
                       starDumpConfiguration.DatabaseName = optionDatabase.Value();
                       starDumpConfiguration.FileName = optionDump.Value();
                       starDumpConfiguration.ForceReload = optionForceReload.HasValue();
-                      
+
+                      // SkipTablePrefixes Option
+                      if (optionSkipTablePrefixes.HasValue())
+                      {
+                          starDumpConfiguration.SkipTablePrefixes = optionSkipTablePrefixes.Value().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                      }
+
                       // Execute Reload
                       try
                       {

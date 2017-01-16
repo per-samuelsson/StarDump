@@ -235,7 +235,7 @@ namespace StarDump.Core
             return s;
         }
 
-        public string GetSetSpecifier(ulong dbHandle, Starcounter.Internal.Metadata.MotherOfAllLayouts row)
+        protected string GetSetSpecifier(ulong dbHandle, Starcounter.Internal.Metadata.MotherOfAllLayouts row)
         {
             var proxy = row as Starcounter.Abstractions.Database.IDbProxy;
             string s = Db.GetSetSpecifier(proxy, dbHandle);
@@ -253,7 +253,7 @@ namespace StarDump.Core
             return specifier.TypeId == s;
         }
 
-        public Dictionary<string, UnloadTable> SelectTables(ulong dbHandle)
+        protected Dictionary<string, UnloadTable> SelectTables(ulong dbHandle)
         {
             IEnumerable<Starcounter.Metadata.RawView> query = Db.SQL<Starcounter.Metadata.RawView>("SELECT t FROM \"Starcounter.Metadata.RawView\" t");
             string[] prefixes = this.Configuration.SkipTablePrefixes;
@@ -282,68 +282,8 @@ namespace StarDump.Core
 
                 tables.Add(specifier, new UnloadTable(specifier, t));
             }
-            
-            this.SelectTableColumns(dbHandle, tables);
 
             return tables;
-        }
-
-        protected void SelectTableColumns(ulong dbHandle, Dictionary<string, UnloadTable> tables)
-        {
-            Dictionary<string, UnloadTable> dictionary = tables.ToDictionary(key => key.Value.FullName, val => val.Value);
-            IEnumerable<Starcounter.Metadata.Column> columns = Db.SQL<Starcounter.Metadata.Column>("SELECT c FROM \"Starcounter.Metadata.Column\" c");
-            string[] prefixes = this.Configuration.SkipColumnPrefixes;
-
-            foreach (Starcounter.Metadata.Column col in columns)
-            {
-                string name = col.Table.FullName;
-
-                if (!dictionary.ContainsKey(name))
-                {
-                    continue;
-                }
-
-                switch (prefixes.Length)
-                {
-                    case 0: break;
-                    case 1:
-                        if (col.Name.StartsWith(prefixes[0]))
-                        {
-                            continue;
-                        }
-                        break;
-                    default:
-                        if (prefixes.Any(x => col.Name.StartsWith(x)))
-                        {
-                            continue;
-                        }
-                        break;
-                }
-
-                dictionary[name].Columns.Add(new UnloadColumn(col));
-            }
-        }
-
-        protected UnloadColumn[] SelectTableColumns(string tableName)
-        {
-            IEnumerable<Starcounter.Metadata.Column> columns = Db.SQL<Starcounter.Metadata.Column>("SELECT c FROM \"Starcounter.Metadata.Column\" c");
-            string[] prefixes = this.Configuration.SkipColumnPrefixes;
-
-            if (prefixes.Length == 0)
-            {
-                columns = columns.Where(x => x.Table.FullName == tableName);
-            }
-            else if (prefixes.Length == 1)
-            {
-                string prefix = prefixes[0];
-                columns = columns.Where(x => x.Table.FullName == tableName && !x.Name.StartsWith(prefix));
-            }
-            else
-            {
-                columns = columns.Where(x => x.Table.FullName == tableName && !prefixes.Any(p => x.Name.StartsWith(p)));
-            }
-
-            return columns.Select(x => new UnloadColumn(x)).ToArray();
         }
 
         protected void InsertMetaInfo(SqliteConnection cn, DateTime unloadStart, DateTime unloadFinish, int tablesCount, ulong rowsCount)

@@ -31,6 +31,11 @@ namespace StarDump.Core
                 };
             }
 
+            reload.ErrorEvent += (sender, message) =>
+            {
+                Out.WriteErrorLine(message);
+            };
+
             Out.WriteLine("Reload started " + config.FileName);
 
             RunResult result = reload.Run();
