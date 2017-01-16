@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StarDump
+namespace StarDump.Common
 {
-    public class ConsoleOutput : StarDump.Core.Output
+    public class Output
     {
-        public override void WriteErrorLine(string message = null)
+        public void WriteErrorLine(string message = null)
         {
             if (message == null)
             {
@@ -27,7 +27,7 @@ namespace StarDump
             System.Console.ResetColor();
         }
 
-        public override void WriteErrorLine(List<string> messages)
+        public void WriteErrorLine(List<string> messages)
         {
             foreach (string message in messages)
             {
@@ -35,7 +35,7 @@ namespace StarDump
             }
         }
 
-        public override void WriteWarningLine(string message = null)
+        public void WriteWarningLine(string message = null)
         {
             if (message == null)
             {
@@ -48,7 +48,7 @@ namespace StarDump
             System.Console.ResetColor();
         }
 
-        public override void WriteWarningLine(List<string> messages)
+        public void WriteWarningLine(List<string> messages)
         {
             foreach (string message in messages)
             {
@@ -56,7 +56,7 @@ namespace StarDump
             }
         }
 
-        public override void WriteLine(string message = null)
+        public void WriteLine(string message = null)
         {
             if (message == null)
             {
@@ -67,7 +67,7 @@ namespace StarDump
             System.Console.WriteLine(message);
         }
 
-        public override void WriteLine(List<string> messages)
+        public void WriteLine(List<string> messages)
         {
             foreach (string message in messages)
             {

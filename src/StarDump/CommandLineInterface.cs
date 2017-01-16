@@ -10,7 +10,7 @@ namespace StarDump
     public class CommandLineInterface
     {
         private CommandLineApplication commandLineApplication { get; set; }
-        private ConsoleOutput Output = new ConsoleOutput();
+        private StarDump.Common.Output Output = new StarDump.Common.Output();
 
         private const string HELP_TEMPLATE = "-? | -h | --help";
 
@@ -117,7 +117,7 @@ namespace StarDump
                       // Execute Unload
                       try
                       {
-                          bool execution = StarDump.Core.CommandInterface.Unload(starDumpConfiguration, new StarDump.Core.Output());
+                          bool execution = StarDump.Core.CommandInterface.Unload(starDumpConfiguration, this.Output);
                           return execution ? 0 : -1;
                       }
                       catch (Exception e)
@@ -180,7 +180,7 @@ namespace StarDump
                       // Execute Reload
                       try
                       {
-                          bool execution = StarDump.Core.CommandInterface.Reload(starDumpConfiguration, new StarDump.Core.Output());
+                          bool execution = StarDump.Core.CommandInterface.Reload(starDumpConfiguration, this.Output);
                           return execution ? 0 : -1;
                       }
                       catch (Exception e)

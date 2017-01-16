@@ -54,6 +54,7 @@ namespace StarDump.Core
             bool abort = this.AbortReload();
             if (abort)
             {
+                this.ErrorEvent?.Invoke(this, "");
                 this.ErrorEvent?.Invoke(this, string.Format("Aborting: --database={0} already contains tables other than --skiptableprefixes=\"{1}\".\r\n  Either create a new database OR\r\n  set --forcereload or --skiptableprefixes and take care of object ID uniqueness", 
                     this.Configuration.DatabaseName,
                     string.Join(", ", this.Configuration.SkipTablePrefixes)));
