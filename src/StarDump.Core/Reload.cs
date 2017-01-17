@@ -21,6 +21,7 @@ namespace StarDump.Core
         public event EventHandler<string> ReloadTableStart;
         public event EventHandler<string> ReloadTableFinish;
         public event EventHandler<string> ErrorEvent;
+        public event EventHandler<string> WarningEvent;
 
         public Reload(Configuration config)
         {
@@ -55,9 +56,8 @@ namespace StarDump.Core
             if (abort)
             {
                 this.ErrorEvent?.Invoke(this, "");
-                this.ErrorEvent?.Invoke(this, string.Format("Aborting: --database={0} already contains tables other than --skiptableprefixes=\"{1}\".\r\n  Either create a new database OR\r\n  set --forcereload or --skiptableprefixes and take care of object ID uniqueness", 
-                    this.Configuration.DatabaseName,
-                    string.Join(", ", this.Configuration.SkipTablePrefixes)));
+                this.ErrorEvent?.Invoke(this, string.Format("Aborting: --database={0} has already been initialized with tables.\r\n  Either create a new database OR\r\n  set --forcereload and take care of object ID uniqueness and table schemas.",
+                    config.DatabaseName));
 
                 host.Dispose();
                 watch.Stop();
@@ -87,41 +87,34 @@ namespace StarDump.Core
         protected bool AbortReload()
         {
             bool abort = false;
-
-            if (this.Configuration.ForceReload)
-            {
-                // Force reload
-                return abort;
-            }
+            EventHandler<string> eventHandler;
 
             // Check if database is empty
             Db.Transact(() =>
             {
-                IEnumerable<Starcounter.Metadata.RawView> query = Db.SQL<Starcounter.Metadata.RawView>("SELECT t FROM \"Starcounter.Metadata.RawView\" t");
-                string[] prefixes = this.Configuration.SkipTablePrefixes;
+                List<Starcounter.Metadata.RawView> tableList = Db.SQL<Starcounter.Metadata.RawView>("SELECT t FROM \"Starcounter.Metadata.RawView\" t").Where(x => x.Updatable == true).ToList();
 
-                foreach (Starcounter.Metadata.RawView t in query)
+                if (tableList.Count() == 0)
                 {
-                    switch (prefixes.Length)
-                    {
-                        case 0:
-                            break;
-                        case 1:
-                            if (t.FullName.StartsWith(prefixes[0]))
-                            {
-                                continue;
-                            }
-                            break;
-                        default:
-                            if (prefixes.Any(x => t.FullName.StartsWith(x)))
-                            {
-                                continue;
-                            }
-                            break;
-                    }
+                    return;  // New database
+                }
 
+                if (this.Configuration.ForceReload)
+                {
+                    eventHandler = WarningEvent; // Warnings only
+                    eventHandler?.Invoke(this, string.Format("Warnings ({0}), make sure to take care of object ID uniqueness and table schemas:", tableList.Count()));
+                }
+                else
+                {
                     abort = true;
-                    this.ErrorEvent?.Invoke(this, string.Format("Database is not empty: Table {0} exists.", t.FullName));
+                    eventHandler = ErrorEvent; // Abort with errors
+                    eventHandler?.Invoke(this, string.Format("Errors ({0}):", tableList.Count()));
+                }
+
+                // Write existing tables
+                foreach (Starcounter.Metadata.RawView t in tableList)
+                {
+                    eventHandler?.Invoke(this, string.Format("  Database is not empty: Table {0} already exists.", t.FullName));
                 }
             });
 

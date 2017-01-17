@@ -35,6 +35,10 @@ namespace StarDump.Core
             {
                 Out.WriteErrorLine(message);
             };
+            reload.WarningEvent += (sender, message) =>
+            {
+                Out.WriteWarningLine(message);
+            };
 
             Out.WriteLine("Reload started " + config.FileName);
 
