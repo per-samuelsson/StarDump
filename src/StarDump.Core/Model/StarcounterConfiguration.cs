@@ -18,9 +18,8 @@ namespace StarDump.Core
 
         public static StarcounterConfiguration GetCurrentConfiguration()
         {
-            string path = Installation.GetInstallationDirectory();
-            Installation installation = new Installation(path);
-            ServerConfiguration config = ServerConfiguration.Load(installation.RepositoryPath);
+            string configDir = ServerConfiguration.GetConfigurationDirectory();
+            ServerConfiguration config = ServerConfiguration.Load(configDir);
             string url = string.Format("http://localhost:{0}/api/admin/servers/personal/settings", config.SystemHttpPort);
             HttpClient client = new HttpClient();
 
