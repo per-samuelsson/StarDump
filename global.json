@@ -1,6 +1,5 @@
 {
     "projects": [
-        "../Starcounter.Core/src",
         "src"
     ],
     "sdk": {
