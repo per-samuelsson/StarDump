@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Starcounter;
-using Starcounter.Database.Interop;
+using Starcounter.Core;
+using Starcounter.Core.Database.Interop;
 using StarDump.Common;
 
 namespace StarDump.Core
 {
-    public class UnloadRow : StarDump.Common.DumpRow, Starcounter.Abstractions.Database.IDbProxy
+    public class UnloadRow : StarDump.Common.DumpRow, Starcounter.Core.Abstractions.Database.IDbProxy
     {
         public static void RegisterDatabaseType()
         {
@@ -34,12 +34,12 @@ namespace StarDump.Core
         /// </summary>
         public void Insert(ReloadTable table)
         {
-            ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
+            ulong dbHandle = Starcounter.Core.Database.Transaction.Current.DatabaseContext.Handle;
             ulong crudHandle;
             ulong dbId = this.DbGetIdentity();
             ulong dbRef;
 
-            Db.MetalayerCheck(Starcounter.Database.Interop.sccrud.star_crud_GetCreateHandle(dbHandle, table.Name, out crudHandle));
+            Db.MetalayerCheck(Starcounter.Core.Database.Interop.sccrud.star_crud_GetCreateHandle(dbHandle, table.Name, out crudHandle));
             DbCrud.CreateWithId(dbId, out dbRef, crudHandle);
 
             foreach (ReloadColumn c in table.Columns)
@@ -64,7 +64,7 @@ namespace StarDump.Core
             throw new NotImplementedException();
         }
 
-        public bool Equals(Starcounter.Abstractions.Database.IDbProxy obj)
+        public bool Equals(Starcounter.Core.Abstractions.Database.IDbProxy obj)
         {
             return this.DbObjectIdentity == obj.DbGetIdentity();
         }

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Starcounter;
+using Starcounter.Core;
 using StarDump.Common;
 
 namespace StarDump.Core

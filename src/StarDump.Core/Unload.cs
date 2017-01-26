@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
-using Starcounter;
+using Starcounter.Core;
 using StarDump.Common;
 
 namespace StarDump.Core
@@ -55,7 +55,7 @@ namespace StarDump.Core
 
             Db.Transact(() =>
             {
-                ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
+                ulong dbHandle = Starcounter.Core.Database.Transaction.Current.DatabaseContext.Handle;
 
                 Dictionary<string, UnloadTable> tablesDictionary = this.SelectTables(dbHandle);
 
@@ -93,7 +93,7 @@ namespace StarDump.Core
                         continue;
                     }
 
-                    var proxy = row as Starcounter.Abstractions.Database.IDbProxy;
+                    var proxy = row as Starcounter.Core.Abstractions.Database.IDbProxy;
                     DumpRow r = new UnloadRow(proxy.DbGetIdentity(), proxy.DbGetReference());
 
                     table.FillRow(r);
@@ -237,7 +237,7 @@ namespace StarDump.Core
 
         protected string GetSetSpecifier(ulong dbHandle, Starcounter.Internal.Metadata.MotherOfAllLayouts row)
         {
-            var proxy = row as Starcounter.Abstractions.Database.IDbProxy;
+            var proxy = row as Starcounter.Core.Abstractions.Database.IDbProxy;
             string s = Db.GetSetSpecifier(proxy, dbHandle);
 
             return s;

@@ -1,8 +1,7 @@
-using System;
-using Starcounter;
-
 namespace StarDump.Core
 {
+    using Starcounter.Core;
+
     public class UnloadColumn : StarDump.Common.UnloadColumn
     {
         public UnloadColumn(Starcounter.Metadata.Column column)

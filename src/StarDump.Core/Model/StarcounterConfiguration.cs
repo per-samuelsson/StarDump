@@ -1,8 +1,8 @@
 using System;
 using System.Net.Http;
 using Newtonsoft.Json;
-using Starcounter;
-using Starcounter.Configuration;
+using Starcounter.Core;
+using Starcounter.Core.Configuration;
 
 namespace StarDump.Core
 {

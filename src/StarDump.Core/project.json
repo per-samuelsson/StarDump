@@ -6,7 +6,8 @@
   },
   "dependencies": {
     "StarDump.Common": "1.0.0",
-    "Starcounter": "0.1.0-develop-1389",
+    "Starcounter.Core": "*",
+    // "Starcounter": "0.1.0-develop-1389",
     "Microsoft.Data.Sqlite": "1.1.0"
   },
   "frameworks": {

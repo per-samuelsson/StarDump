@@ -5,13 +5,13 @@ using System.IO;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
-using Starcounter;
-using Starcounter.Database.Interop;
+using Starcounter.Core;
+using Starcounter.Core.Database.Interop;
 using StarDump.Common;
 
 namespace StarDump.Core
 {
-    using BluestarColumn = Starcounter.Database.Interop.scdbmetalayer.STAR_COLUMN_DEFINITION_NAMES;
+    using BluestarColumn = Starcounter.Core.Database.Interop.scdbmetalayer.STAR_COLUMN_DEFINITION_NAMES;
 
 
     public class Reload
@@ -216,7 +216,7 @@ namespace StarDump.Core
         {
             Db.Transact(() => 
             {
-                ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
+                ulong dbHandle = Starcounter.Core.Database.Transaction.Current.DatabaseContext.Handle;
                 
                 this.CreateTable(table, table.Columns);
                 table.CrudHelper = new CrudHelper(dbHandle, table);
@@ -229,10 +229,10 @@ namespace StarDump.Core
 
             ushort layout;
             string parentName = table.ParentName;
-            ulong dbHandle = Starcounter.Database.Transaction.Current.DatabaseContext.Handle;
+            ulong dbHandle = Starcounter.Core.Database.Transaction.Current.DatabaseContext.Handle;
 
             bluestarColumns.Add(new BluestarColumn() { name = null });
-            Starcounter.Db.MetalayerCheck(scdbmetalayer.star_create_table_by_names(dbHandle, table.Name, parentName, bluestarColumns.ToArray(), out layout));
+            Starcounter.Core.Db.MetalayerCheck(scdbmetalayer.star_create_table_by_names(dbHandle, table.Name, parentName, bluestarColumns.ToArray(), out layout));
         }
 
         protected void InsertTableData(SqliteConnection cn, ReloadTable table, out ulong rowsCount)
