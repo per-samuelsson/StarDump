@@ -7,34 +7,34 @@ using Starcounter.Core;
 
 namespace StarDump.Core.Tests
 {
-    [Database]
-    public class Parent
-    {
-        public virtual string Name { get; set; }
-    }
+    // [Database]
+    // public class Parent
+    // {
+    //     public virtual string Name { get; set; }
+    // }
 
     public class UnloadTest
     {
-        [Fact]
-        public void Test_Unload()
-        {
-            string[] args = new string[] { };
-            var host = new AppHostBuilder().AddCommandLine(args).Build();
+        // [Fact]
+        // public void Test_Unload()
+        // {
+        //     string[] args = new string[] { };
+        //     var host = new AppHostBuilder().AddCommandLine(args).Build();
             
-            host.Start();
+        //     host.Start();
 
-            Db.Transact(() =>
-            {
-                Parent p = Db.Insert<Parent>();
-                p.Name = "Xunit test";
-                //new Parent() { Name = "Xunit test" };
+        //     Db.Transact(() =>
+        //     {
+        //         Parent p = Db.Insert<Parent>();
+        //         p.Name = "Xunit test";
+        //         //new Parent() { Name = "Xunit test" };
 
-                p = Db.SQL<Parent>("SELECT p FROM StarDump.Core.Tests.Parent p").FirstOrDefault();
+        //         p = Db.SQL<Parent>("SELECT p FROM StarDump.Core.Tests.Parent p").FirstOrDefault();
 
-                Assert.Equal(p.Name, "Xunit test");
-            });
+        //         Assert.Equal(p.Name, "Xunit test");
+        //     });
 
-            host.Dispose();
-        }
+        //     host.Dispose();
+        // }
     }
 }
