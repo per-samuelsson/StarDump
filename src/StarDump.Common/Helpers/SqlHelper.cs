@@ -407,6 +407,14 @@ namespace StarDump.Common
                     value = this.EscapeSqliteString(value.ToString());
                     sql.Append("'").Append(value).Append("'");
                 }
+                else if (double.PositiveInfinity.Equals(value))
+                {
+                    sql.Append("9e999");
+                }
+                else if (double.NegativeInfinity.Equals(value))
+                {
+                    sql.Append("-9e999");
+                }
                 else
                 {
                     sql.Append(value);
