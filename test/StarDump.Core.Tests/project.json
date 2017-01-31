@@ -5,7 +5,8 @@
     "debugType": "portable"
   },
   "dependencies": {
-    "Starcounter.Core": "*",
+    // "Starcounter.Core": "*",
+    "Starcounter.Core": "0.1.0-develop-1394",
     "StarDump.Core": "1.0.0",
     "xunit": "2.2.0-beta2-build3300",
     "Microsoft.DotNet.InternalAbstractions": "1.0.0",
