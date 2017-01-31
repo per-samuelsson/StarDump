@@ -341,6 +341,48 @@ namespace StarDump.Common
             }
         }
 
+        public bool IsSupportedDataType(string dataTypeName)
+        {
+            switch (dataTypeName)
+            {
+                case "bool":
+                case "byte":
+                case "char":
+                case "DateTime":
+                case "decimal":
+                case "double":
+                case "float":
+                case "int":
+                case "long":
+                case "sbyte":
+                case "short":
+                case "string?":
+                case "string":
+                case "uint":
+                case "ulong":
+                case "ushort":
+                case "bool?":
+                case "byte?":
+                case "char?":
+                case "DateTime?":
+                case "decimal?":
+                case "double?":
+                case "float?":
+                case "int?":
+                case "long?":
+                case "sbyte?":
+                case "short?":
+                case "uint?":
+                case "reference":
+                case "reference?":
+                case "ulong?":
+                case "ushort?": return true;
+
+                case "byte[]":
+                default: return false;
+            }
+        }
+
         public void SetupSqliteConnection(DbConnection cn)
         {
             // http://blog.quibb.org/2010/08/fast-bulk-inserts-into-sqlite/

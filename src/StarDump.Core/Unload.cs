@@ -320,7 +320,7 @@ namespace StarDump.Core
                         break;
                 }
 
-                dictionary[name].Columns.Add(new UnloadColumn(col));
+                dictionary[name].Columns.Add(new UnloadColumn(col, this.SqlHelper));
             }
         }
 
@@ -343,7 +343,7 @@ namespace StarDump.Core
                 columns = columns.Where(x => x.Table.FullName == tableName && !prefixes.Any(p => x.Name.StartsWith(p)));
             }
 
-            return columns.Select(x => new UnloadColumn(x)).ToArray();
+            return columns.Select(x => new UnloadColumn(x, this.SqlHelper)).ToArray();
         }
 
         protected void InsertMetaInfo(SqliteConnection cn, DateTime unloadStart, DateTime unloadFinish, int tablesCount, ulong rowsCount)
