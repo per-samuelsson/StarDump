@@ -13,6 +13,8 @@ namespace StarDump
     {
         public static void Main(string[] args)
         {
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+            
             CommandLineInterface cli = new CommandLineInterface();
             cli.Execute(args);
         }

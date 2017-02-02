@@ -14,6 +14,8 @@ namespace StarDump.Core
     {
         public static void Main(string[] args)
         {
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+
             Configuration config = new Configuration();
             //config.FileName = Path.Combine(@"C:\Temp\Core\Database", config.FileInfo.Name);
             //config.FileName = @"C:\Temp\Core\Database\stardump-default-2016.12.06-10.44.sqlite3";
