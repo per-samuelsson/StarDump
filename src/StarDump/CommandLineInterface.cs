@@ -33,13 +33,13 @@ namespace StarDump
                 }
                 return commandLineApplication.Execute(args);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 commandLineApplication.ShowHelp();
                 Output.WriteErrorLine(e);
                 return -1;
             }
-            
+
         }
 
         private void AddUnloadCommand()
@@ -95,9 +95,9 @@ namespace StarDump
                           }
                           else
                           {
-                              Output.WriteWarningLine(string.Format("Could not parse \"{0}\" to int, using default value, {1}={2}", 
+                              Output.WriteWarningLine(string.Format("Could not parse \"{0}\" to int, using default value, {1}={2}",
                                   optionBufferSize.Value(),
-                                  "--" + optionBufferSize.LongName, 
+                                  "--" + optionBufferSize.LongName,
                                   starDumpConfiguration.InsertRowsBufferSize));
                           }
                       }
@@ -181,7 +181,7 @@ namespace StarDump
                           Output.WriteErrorLine(e);
                           return -1;
                       }
-                      
+
                   });
               });
         }
@@ -189,6 +189,13 @@ namespace StarDump
         private void AddBaseOptionsAndArguments()
         {
             commandLineApplication.HelpOption(HELP_TEMPLATE);
+            commandLineApplication.VersionOption("-v | --version", () =>
+            {
+                return string.Format("{0}\r\n {1}", StarDump.Core.Assembly.ApplicationVersionMessage(), StarDump.Core.Assembly.FormatVersionMessage());
+            }, () =>
+            {
+                return string.Format("{0}\r\n{1}", StarDump.Core.Assembly.ApplicationVersionMessage(), StarDump.Core.Assembly.FormatVersionMessage());
+            });
         }
     }
 }
