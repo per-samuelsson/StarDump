@@ -39,22 +39,22 @@ def restoreStarDumpBase():
 		print("-- Restore StarDump projects exited with error code {0}!".format(exit_code))
 		sys.exit(exit_code)
 		
-# Restore StarDump.Core.Tests
+# Restore StarDump.Xunit.Test
 def restoreStarDumpCoreTests():
-	dotnet_cmd = "dotnet restore {0}\\test\\StarDump.Core.Tests".format(rootPath)
-	print("-- Restore StarDump.Core.Tests project: {0}".format(dotnet_cmd))
+	dotnet_cmd = "dotnet restore {0}\\test\\StarDump.Xunit.Test".format(rootPath)
+	print("-- Restore StarDump.Xunit.Test project: {0}".format(dotnet_cmd))
 	exit_code = subprocess.call(dotnet_cmd, shell=True)
 	if 0 != exit_code:
-		print("-- Restore StarDump.Core.Tests project exited with error code {0}!".format(exit_code))
+		print("-- Restore StarDump.Xunit.Test project exited with error code {0}!".format(exit_code))
 		sys.exit(exit_code)
 
-# Excute tests in StarDump.Core.Tests
+# Execute tests in StarDump.Xunit.Test
 def executeStarDumpCoreTests():
-	dotnet_cmd = "dotnet test {0}\\test\\StarDump.Core.Tests -teamcity".format(rootPath)
-	print("-- Excute tests in StarDump.Core.Tests project: {0}".format(dotnet_cmd))
+	dotnet_cmd = "dotnet test {0}\\test\\StarDump.Xunit.Test -teamcity".format(rootPath)
+	print("-- Execute tests in StarDump.Xunit.Test project: {0}".format(dotnet_cmd))
 	exit_code = subprocess.call(dotnet_cmd, shell=True)
 	if 0 != exit_code:
-		print("-- Tests in StarDump.Core.Tests project exited with error code {0}!".format(exit_code))
+		print("-- Tests in StarDump.Xunit.Test project exited with error code {0}!".format(exit_code))
 		sys.exit(exit_code)
 
 # Restore StarDump

@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace StarDump.Core.Tests
+namespace StarDump.Xunit.Test
 {
     public class AssemblyVersionTest
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace StarDump.Core.Tests
+namespace StarDump.Xunit.Test
 {
     /// <summary>
     /// Class which tests data conversions between Starcounter types and Sqlite types, 
