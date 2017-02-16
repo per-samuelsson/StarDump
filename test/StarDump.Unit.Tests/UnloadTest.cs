@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Starcounter.Core;
 
-namespace StarDump.Xunit.Test
+namespace StarDump.Unit.Tests
 {
     // [Database]
     // public class Parent
@@ -29,7 +29,7 @@ namespace StarDump.Xunit.Test
         //         p.Name = "Xunit test";
         //         //new Parent() { Name = "Xunit test" };
 
-        //         p = Db.SQL<Parent>("SELECT p FROM StarDump.Xunit.Test.Parent p").FirstOrDefault();
+        //         p = Db.SQL<Parent>("SELECT p FROM StarDump.Unit.Tests.Parent p").FirstOrDefault();
 
         //         Assert.Equal(p.Name, "Xunit test");
         //     });
