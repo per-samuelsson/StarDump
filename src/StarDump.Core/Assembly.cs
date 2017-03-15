@@ -5,7 +5,7 @@ namespace StarDump.Core
         /// <summary>
         /// Version of Application
         /// </summary>
-        public const string Version = "0.1.0";
+        public const string Version = "0.1.1";
 		
         /// <summary>
         /// Version of SQLite dump format
