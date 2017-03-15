@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Starcounter.Core;
-using Starcounter.Core.Database.Interop;
+using Starcounter.Core.Interop;
+using Starcounter.Core.Database;
 using StarDump.Common;
 
 namespace StarDump.Core
@@ -37,7 +38,7 @@ namespace StarDump.Core
             {
                 ulong setter;
 
-                Db.MetalayerCheck(Starcounter.Core.Database.Interop.sccrud.star_crud_GetPropertyWriteHandle(dbHandle, this.TableName, c.Name, out setter));
+                Db.MetalayerCheck(Starcounter.Core.Interop.sccrud.star_crud_GetPropertyWriteHandle(dbHandle, this.TableName, c.Name, out setter));
                 setters.Add(c.Name, setter);
                 setMethods.Add(c.Name, this.SetMethod(c.DataType, c.Nullable));
             }

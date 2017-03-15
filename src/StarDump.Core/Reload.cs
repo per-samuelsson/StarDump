@@ -6,13 +6,13 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Starcounter.Core;
-using Starcounter.Core.Database.Interop;
+using Starcounter.Core.Interop;
+using Starcounter.Core.Hosting;
 using StarDump.Common;
 
 namespace StarDump.Core
 {
-    using BluestarColumn = Starcounter.Core.Database.Interop.scdbmetalayer.STAR_COLUMN_DEFINITION_NAMES;
-
+    using BluestarColumn = Starcounter.Core.Interop.scdbmetalayer.STAR_COLUMN_DEFINITION_NAMES;
 
     public class Reload
     {

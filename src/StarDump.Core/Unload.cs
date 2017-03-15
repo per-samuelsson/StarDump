@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
 using Starcounter.Core;
+using Starcounter.Core.Hosting;
+using Starcounter.Core.Database;
 using StarDump.Common;
 
 namespace StarDump.Core
@@ -222,7 +224,8 @@ namespace StarDump.Core
 
         protected string GetSetSpecifier(ulong dbHandle, Starcounter.Metadata.RawView table)
         {
-            Starcounter.Internal.Metadata.SetSpecifier specifier = DbCrud.GetSetSpecifier(table, dbHandle);
+            var proxy = table as Starcounter.Core.Abstractions.Database.IDbProxy;
+            Starcounter.Internal.Metadata.SetSpecifier specifier = DbCrud.GetSetSpecifier<Starcounter.Internal.Metadata.SetSpecifier>(proxy, dbHandle);
 
             return specifier.TypeId;
         }
@@ -238,9 +241,9 @@ namespace StarDump.Core
         protected string GetSetSpecifier(ulong dbHandle, Starcounter.Internal.Metadata.MotherOfAllLayouts row)
         {
             var proxy = row as Starcounter.Core.Abstractions.Database.IDbProxy;
-            string s = Db.GetSetSpecifier(proxy, dbHandle);
+            Starcounter.Internal.Metadata.SetSpecifier specifier = DbCrud.GetSetSpecifier<Starcounter.Internal.Metadata.SetSpecifier>(proxy, dbHandle);
 
-            return s;
+            return specifier.TypeId;
         }
 
         /// <summary>

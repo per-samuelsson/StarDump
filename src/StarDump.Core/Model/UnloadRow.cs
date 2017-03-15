@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Starcounter.Core;
-using Starcounter.Core.Database.Interop;
+using Starcounter.Core.Database;
 using StarDump.Common;
 
 namespace StarDump.Core
@@ -39,7 +39,7 @@ namespace StarDump.Core
             ulong dbId = this.DbGetIdentity();
             ulong dbRef;
 
-            Db.MetalayerCheck(Starcounter.Core.Database.Interop.sccrud.star_crud_GetCreateHandle(dbHandle, table.Name, out crudHandle));
+            Db.MetalayerCheck(Starcounter.Core.Interop.sccrud.star_crud_GetCreateHandle(dbHandle, table.Name, out crudHandle));
             DbCrud.CreateWithId(dbId, out dbRef, crudHandle);
 
             foreach (ReloadColumn c in table.Columns)
