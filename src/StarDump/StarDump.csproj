@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <DebugType>portable</DebugType>
+    <DebugType>Portable</DebugType>
     <AssemblyName>StarDump</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>StarDump</PackageId>

@@ -9,6 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarDump.Common", "src\Star
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarDump.Core", "src\StarDump.Core\StarDump.Core.csproj", "{F0546315-BDD8-4DA4-94C4-BD971369A368}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{642FF3EE-8C94-4377-B329-B7D8D9B038B2}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\test_and_publish.py = scripts\test_and_publish.py
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarDump.Unit.Tests", "test\StarDump.Unit.Tests\StarDump.Unit.Tests.csproj", "{2383C335-2945-4EC8-841F-2507BFCE0A13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +36,10 @@ Global
 		{F0546315-BDD8-4DA4-94C4-BD971369A368}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0546315-BDD8-4DA4-94C4-BD971369A368}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F0546315-BDD8-4DA4-94C4-BD971369A368}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{2383C335-2945-4EC8-841F-2507BFCE0A13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2383C335-2945-4EC8-841F-2507BFCE0A13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2383C335-2945-4EC8-841F-2507BFCE0A13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2383C335-2945-4EC8-841F-2507BFCE0A13}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <DebugType>portable</DebugType>
+    <DebugType>Portable</DebugType>
     <AssemblyName>StarDump.Core</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>StarDump.Core</PackageId>
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Starcounter.Core" Version="0.2.0-develop-1665" />
+    <PackageReference Include="Starcounter.Core" Version="0.2.0-develop-1668" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="1.1.0" />
   </ItemGroup>
 
