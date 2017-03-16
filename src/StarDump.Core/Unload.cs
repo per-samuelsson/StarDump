@@ -227,6 +227,8 @@ namespace StarDump.Core
             var proxy = table as Starcounter.Core.Abstractions.Database.IDbProxy;
             Starcounter.Internal.Metadata.SetSpecifier specifier = DbCrud.GetSetSpecifier<Starcounter.Internal.Metadata.SetSpecifier>(proxy, dbHandle);
 
+            Debug.Assert(specifier != null);
+
             return specifier.TypeId;
         }
 
@@ -241,9 +243,14 @@ namespace StarDump.Core
         protected string GetSetSpecifier(ulong dbHandle, Starcounter.Internal.Metadata.MotherOfAllLayouts row)
         {
             var proxy = row as Starcounter.Core.Abstractions.Database.IDbProxy;
-            Starcounter.Internal.Metadata.SetSpecifier specifier = DbCrud.GetSetSpecifier<Starcounter.Internal.Metadata.SetSpecifier>(proxy, dbHandle);
 
-            return specifier.TypeId;
+            IntPtr ptr;
+            Error.Check(Starcounter.Core.Interop.sccoredb.star_context_get_setspec(dbHandle, proxy.DbGetIdentity(), proxy.DbGetReference(), out ptr));
+            string specifier = DbType.BluestarPtrToStringUni(ptr);
+
+            Debug.Assert(!string.IsNullOrEmpty(specifier));
+
+            return specifier;
         }
 
         /// <summary>
