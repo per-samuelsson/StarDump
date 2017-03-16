@@ -1,4 +1,4 @@
-import os, glob, sys, subprocess
+import os, glob, sys, subprocess, shutil
 from pathlib import Path
 
 ##################################################
@@ -14,21 +14,22 @@ def main():
 	executeStarDumpCoreTests()
 	restoreStarDump()
 	publishStarDump()
+	copyStardumpToScBin()
 
 	print("-- StarDump tests and publish succeeded!")
 	sys.exit(0)
 
 # Getting path of the script.
 def get_script_path():
-    return os.path.dirname(__file__)
+    return os.path.abspath(__file__)
 	
 # Init function, sets global variables
 def setGlobalVariables():
 	global rootPath	
-	global publishBasePath
+	global publishPath
 
-	rootPath = Path(get_script_path()).parent
-	publishBasePath = "\\src\\StarDump\\bin\\publish"
+	rootPath = Path(get_script_path()).parent.parent
+	publishPath = os.path.join("{0}".format(rootPath), "src/StarDump/bin/publish", "StarDump")
 
 # Restore StarDump Base repository
 def restoreStarDumpBase():
@@ -68,12 +69,22 @@ def restoreStarDump():
 
 # Publish StarDump
 def publishStarDump():
-	dotnet_cmd = "dotnet publish {0}\\src\\StarDump -o {0}{1}\\StarDump -c release -r win10-x64".format(rootPath, publishBasePath)
+	dotnet_cmd = "dotnet publish {0}\\src\\StarDump -o {1} -c release -r win10-x64".format(rootPath, publishPath)
 	print("-- Publish StarDump project: {0}".format(dotnet_cmd))
 	exit_code = subprocess.call(dotnet_cmd, shell=True)
 	if 0 != exit_code:
 		print("-- Publish StarDump project exited with error code {0}!".format(exit_code))
 		sys.exit(exit_code)
+
+# Copying published binaries to StarcounterBin/StarDump
+def copyStardumpToScBin():
+	scBin = os.environ["StarcounterBin"]
+	dstDir = os.path.join(scBin, "StarDump")
+	if os.path.exists(dstDir):
+		print("-- Deleting existing StarDump dir: {0}".format(dstDir))
+		shutil.rmtree(dstDir)
+	print("-- Copying stardump dir from \"{0}\" to \"{1}\"".format(publishPath, dstDir))
+	shutil.copytree(publishPath, dstDir)
 
 if __name__ == "__main__":
     main()
