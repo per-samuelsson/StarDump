@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarDump.Core", "src\StarDu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{642FF3EE-8C94-4377-B329-B7D8D9B038B2}"
 	ProjectSection(SolutionItems) = preProject
-		scripts\test_and_publish.py = scripts\test_and_publish.py
+		scripts\stardump_test.py = scripts\stardump_test.py
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarDump.Unit.Tests", "test\StarDump.Unit.Tests\StarDump.Unit.Tests.csproj", "{2383C335-2945-4EC8-841F-2507BFCE0A13}"
