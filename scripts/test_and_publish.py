@@ -50,7 +50,7 @@ def restoreStarDumpCoreTests():
 
 # Execute tests in StarDump.Unit.Tests
 def executeStarDumpCoreTests():
-	dotnet_cmd = "dotnet test {0}\\test\\StarDump.Unit.Tests\\StarDump.Unit.Tests.csproj -teamcity".format(rootPath)
+	dotnet_cmd = "dotnet test {0}\\test\\StarDump.Unit.Tests\\StarDump.Unit.Tests.csproj".format(rootPath)
 	print("-- Execute tests in StarDump.Unit.Tests project: {0}".format(dotnet_cmd))
 	exit_code = subprocess.call(dotnet_cmd, shell=True)
 	if 0 != exit_code:
