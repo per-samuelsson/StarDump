@@ -68,7 +68,7 @@ def restoreStarDump():
 
 # Publish StarDump
 def publishStarDump():
-	dotnet_cmd = "dotnet publish {0}\\src\\StarDump -o {0}{1}\\StarDump".format(rootPath, publishBasePath)
+	dotnet_cmd = "dotnet publish {0}\\src\\StarDump -o {0}{1}\\StarDump -c release -r win10-x64".format(rootPath, publishBasePath)
 	print("-- Publish StarDump project: {0}".format(dotnet_cmd))
 	exit_code = subprocess.call(dotnet_cmd, shell=True)
 	if 0 != exit_code:
