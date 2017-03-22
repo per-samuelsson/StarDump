@@ -104,5 +104,21 @@ namespace StarDump.Common
                 return new MetaInfo(MetaInfoType.SkipColumnPrefixes, "Skip column prefixes");
             }
         }
+
+        public static MetaInfo ApplicationName
+        {
+            get
+            {
+                return new MetaInfo(MetaInfoType.ApplicationName, "Application name");
+            }
+        }
+
+        public static MetaInfo ApplicationVersion
+        {
+            get
+            {
+                return new MetaInfo(MetaInfoType.ApplicationVersion, "Application version");
+            }
+        }
     }
 }

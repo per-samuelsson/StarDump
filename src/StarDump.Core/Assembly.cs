@@ -10,7 +10,7 @@ namespace StarDump.Core
         /// <summary>
         /// Version of SQLite dump format
         /// </summary>
-        public const string FormatVersion = "0.0.1";
+        public const string FormatVersion = "0.0.2";
 
         public static string ApplicationVersionMessage()
         {
