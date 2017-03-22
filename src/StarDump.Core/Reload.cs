@@ -6,13 +6,13 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Starcounter.Core;
-using Starcounter.Core.Database.Interop;
+using Starcounter.Core.Interop;
+using Starcounter.Core.Hosting;
 using StarDump.Common;
 
 namespace StarDump.Core
 {
-    using BluestarColumn = Starcounter.Core.Database.Interop.scdbmetalayer.STAR_COLUMN_DEFINITION_NAMES;
-
+    using BluestarColumn = Starcounter.Core.Interop.scdbmetalayer.STAR_COLUMN_DEFINITION_NAMES;
 
     public class Reload
     {
@@ -256,7 +256,7 @@ namespace StarDump.Core
                     ReloadColumn c = table.Columns[i];
                     object value = reader.GetValue(i + 1);
 
-                    row[c.Name] = this.SqlHelper.ConvertFromSqliteToStarcounter(c.DataType, value);
+                    row[c.Name] = this.SqlHelper.ConvertFromSqliteToStarcounter(c.DataTypeName, value);
                 }
 
                 temp.Add(row);
@@ -360,7 +360,7 @@ namespace StarDump.Core
                     Id = id,
                     TableId = tableId,
                     Name = name,
-                    DataType = dataType,
+                    DataTypeName = dataType,
                     ReferenceType = referenceType,
                     Nullable = nullable == 1,
                     Inherited = inherited == 1
@@ -376,7 +376,7 @@ namespace StarDump.Core
 
         protected BluestarColumn GetBluestarColumn(ReloadColumn c)
         {
-            return this.GetBluestarColumn(c.Name, c.DataType, c.ReferenceType, c.Nullable);
+            return this.GetBluestarColumn(c.Name, c.DataTypeName, c.ReferenceType, c.Nullable);
         }
 
         protected BluestarColumn GetBluestarColumn(string name, string dataType, string referenceType, bool nullable)

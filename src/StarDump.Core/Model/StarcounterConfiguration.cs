@@ -2,7 +2,7 @@ using System;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Starcounter.Core;
-using Starcounter.Core.Configuration;
+using Starcounter.Core.Options;
 
 namespace StarDump.Core
 {
@@ -18,8 +18,8 @@ namespace StarDump.Core
 
         public static StarcounterConfiguration GetCurrentConfiguration()
         {
-            string configDir = ServerConfiguration.GetConfigurationDirectory();
-            ServerConfiguration config = ServerConfiguration.Load(configDir);
+            string configDir = ServerOptions.GetConfigurationDirectory();
+            PersonalServerConfigFile config = new PersonalServerConfigFile(configDir);
             string url = string.Format("http://localhost:{0}/api/admin/servers/personal/settings", config.SystemHttpPort);
             HttpClient client = new HttpClient();
 
