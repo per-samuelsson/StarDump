@@ -11,6 +11,8 @@ namespace StarDump.Common
         FormatVersion = 7,
         DatabaseName = 8,
         SkipTablePrefixes = 9,
-        SkipColumnPrefixes = 10
+        SkipColumnPrefixes = 10,
+        ApplicationName = 11,
+        ApplicationVersion = 12
     }
 }

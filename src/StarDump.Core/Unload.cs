@@ -382,6 +382,14 @@ namespace StarDump.Core
             info.Value = config.Version;
             infos.Add(info);
 
+            info = MetaInfo.ApplicationName;
+            info.Value = nameof(StarDump);
+            infos.Add(info);
+
+            info = MetaInfo.ApplicationVersion;
+            info.Value = Assembly.Version;
+            infos.Add(info);
+
             info = MetaInfo.StarDumpVersion;
             info.Value = Assembly.Version;
             infos.Add(info);
