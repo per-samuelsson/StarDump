@@ -13,6 +13,8 @@ namespace StarDump.Common
         public string FileName { get; set; }
         public string[] SkipColumnPrefixes { get; set; }
         public string[] SkipTablePrefixes { get; set; }
+        public string[] SkipTables { get; set; }
+        public string[] UnloadTables { get; set; }
         public int InsertRowsBufferSize { get; set; }
         /// <summary>
         /// Forces the file to be reloaded even if the database already contains data.
@@ -31,7 +33,9 @@ namespace StarDump.Common
             this.Verbose = 1;
             this.DatabaseName = databaseName;
             this.SkipColumnPrefixes = new string[] { "__" };
-            this.SkipTablePrefixes = new string[] { };
+            this.SkipTablePrefixes = new string[0];
+            this.SkipTables = new string[0];
+            this.UnloadTables = new string[0];
             this.InsertRowsBufferSize = 500;
             this.ForceReload = false;
 

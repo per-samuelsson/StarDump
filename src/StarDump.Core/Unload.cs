@@ -267,11 +267,18 @@ namespace StarDump.Core
         {
             IEnumerable<Starcounter.Metadata.RawView> query = Db.SQL<Starcounter.Metadata.RawView>("SELECT t FROM \"Starcounter.Metadata.RawView\" t");
             string[] prefixes = this.Configuration.SkipTablePrefixes;
+            string[] skip = this.Configuration.SkipTables;
+            string[] unload = this.Configuration.UnloadTables;
             Dictionary<string, UnloadTable> tables = new Dictionary<string, UnloadTable>();
 
             foreach (Starcounter.Metadata.RawView t in query)
             {
                 if (!t.Updatable)
+                {
+                    continue;
+                }
+
+                if (unload.Any() && !unload.Contains(t.FullName))
                 {
                     continue;
                 }
@@ -291,6 +298,11 @@ namespace StarDump.Core
                             continue;
                         }
                         break;
+                }
+
+                if (skip.Contains(t.FullName))
+                {
+                    continue;
                 }
 
                 string specifier = this.GetSetSpecifier(dbHandle, t);
