@@ -31,7 +31,7 @@ namespace StarDump.Common
             this.Verbose = 1;
             this.DatabaseName = databaseName;
             this.SkipColumnPrefixes = new string[] { "__" };
-            this.SkipTablePrefixes = new string[] { "Starcounter.", "Concepts.", "SocietyObjects." };
+            this.SkipTablePrefixes = new string[] { };
             this.InsertRowsBufferSize = 500;
             this.ForceReload = false;
 

@@ -271,6 +271,11 @@ namespace StarDump.Core
 
             foreach (Starcounter.Metadata.RawView t in query)
             {
+                if (!t.Updatable)
+                {
+                    continue;
+                }
+
                 switch (prefixes.Length)
                 {
                     case 0: break;
