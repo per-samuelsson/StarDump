@@ -119,3 +119,5 @@ UpgradeLog*.XML
 node_modules
 
 dist/*
+
+scdataprocess.txt

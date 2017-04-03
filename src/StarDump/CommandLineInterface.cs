@@ -49,6 +49,9 @@ namespace StarDump
             CommandOption optionBufferSize = null;
             CommandOption optionSkipColumnPrefixes = null;
             CommandOption optionSkipTablePrefixes = null;
+            CommandOption optionSkipTables = null;
+            CommandOption optionUnloadTables = null;
+
             commandLineApplication.Command("unload",
               (target) =>
               {
@@ -58,6 +61,8 @@ namespace StarDump
                   optionBufferSize = target.Option("-b | --buffersize <BufferSize>", "Set insert rows buffer size to dump database.", CommandOptionType.SingleValue);
                   optionSkipColumnPrefixes = target.Option("-scp | --skipcolumnprefixes <ColumnPrefixes>", "Column prefixes to skip, space and/or comma separated. Example: -scp=\"a b,c\"", CommandOptionType.SingleValue);
                   optionSkipTablePrefixes = target.Option("-stp | --skiptableprefixes <TablePrefixes>", "Table prefixes to skip, space and/or comma separated. Example: -stp=\"a b,c\"", CommandOptionType.SingleValue);
+                  optionSkipTables = target.Option("-st | --skiptables <TableNames>", "Table names to skip, space and/or comma separated. Example: -stp=\"a b,c\"", CommandOptionType.SingleValue);
+                  optionUnloadTables = target.Option("-ut | --unloadtables <TableNames>", "Table names to unlaod, space and/or comma separated. Example: -stp=\"a b,c\"", CommandOptionType.SingleValue);
 
                   target.HelpOption(HELP_TEMPLATE);
 
@@ -112,6 +117,16 @@ namespace StarDump
                       if (optionSkipTablePrefixes.HasValue())
                       {
                           starDumpConfiguration.SkipTablePrefixes = optionSkipTablePrefixes.Value().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                      }
+
+                      if (optionSkipTables.HasValue())
+                      {
+                          starDumpConfiguration.SkipTables = optionSkipTables.Value().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                      }
+
+                      if (optionUnloadTables.HasValue())
+                      {
+                          starDumpConfiguration.UnloadTables = optionUnloadTables.Value().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
                       }
 
                       // Execute Unload
