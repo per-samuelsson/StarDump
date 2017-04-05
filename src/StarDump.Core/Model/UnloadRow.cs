@@ -9,14 +9,6 @@ namespace StarDump.Core
 {
     public class UnloadRow : StarDump.Common.DumpRow, Starcounter.Core.Abstractions.Database.IDbProxy
     {
-        public static void RegisterDatabaseType()
-        {
-            Db.BindDatabaseClass(typeof(UnloadRow), (dbId, dbRef) => 
-            {
-                return new UnloadRow(dbId, dbRef);
-            });
-        }
-
         public UnloadRow(ulong dbId, ulong dbRef) : base(dbId, dbRef)
         {
         }
