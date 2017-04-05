@@ -46,7 +46,6 @@ namespace StarDump.Core
             var host = new AppHostBuilder().AddCommandLine(args).Build();
             
             host.Start();
-            UnloadRow.RegisterDatabaseType();
             cn.Open();
             this.SqlHelper.SetupSqliteConnection(cn);
 
@@ -377,7 +376,7 @@ namespace StarDump.Core
         {
             MetaInfo info;
             List<MetaInfo> infos = new List<MetaInfo>();
-            StarcounterConfiguration config = StarcounterConfiguration.GetCurrentConfiguration();
+            StarcounterConfiguration config = StarcounterConfiguration.GetConfiguration(this.Configuration.DatabaseName);
 
             info = MetaInfo.UnloadStart;
             info.Value = unloadStart.ToString("yyyy-MM-dd HH:mm:ss.fff \"GMT\"zzz");
